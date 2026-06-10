@@ -30,6 +30,11 @@ that owns credentials.
 Credential-owning boundary that dispatches allowed tool calls after CAK policy
 checks.
 
+## MCP Gateway
+
+Tool gateway implemented as a Model Context Protocol proxy so existing agents
+can route tool calls through CAK without being rewritten.
+
 ## Trace
 
 Event-sourced record of agent execution.

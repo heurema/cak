@@ -2,6 +2,10 @@
 
 CAK should be designed pain-first, not architecture-first.
 
+Pain claims should be backed by sources, interviews, incidents, or marked
+assumptions. The initial P0 evidence ledger is
+[`evidence/p0_pain_sources.md`](../evidence/p0_pain_sources.md).
+
 ## P0 pains
 
 ### 1. Agent behavior is not governable
@@ -18,17 +22,25 @@ Teams cannot reliably answer:
 
 **CAK response:** CAK IR, EvidenceSpec, ArtifactRegistry, ArtifactGraph, VerifierReport, AuditLedger, Incident/Unlearning.
 
+**Evidence status:** partially supported by AI risk-management and GenAI trace
+standardization sources; still needs direct user interviews and incident traces.
+
 ### 2. Agents repeat mistakes instead of learning safely
 
 Agents often fail, then fail the same way again. Worse, they may learn the wrong lesson.
 
 **CAK response:** TraceStore, MemoryCompiler, EffectCompiler, SkillCompiler, EvidenceSpec, Replay, ShadowEval, FailureNonRepetition metric.
 
+**Evidence status:** research-supported, but production pain is not yet proven.
+
 ### 3. Unsafe external actions
 
 Agents increasingly get write tools: email, CRM, GitHub, deployments, billing systems, databases, browsers, and OS actions.
 
 **CAK response:** Agency type system, capability/effect calculus, `Action<irreversible>`, `Env<live>`, `Approval<Token>`, Transaction/Saga, Verifier stack, Policy-as-code.
+
+**Evidence status:** partially supported by tool-use APIs and prompt-injection
+risk; still needs concrete external-action incidents.
 
 ### 4. Cost is unpredictable
 
@@ -46,11 +58,16 @@ Agent cost comes from:
 
 **CAK response:** TaskCapsule, CostGuard, FrontierGate, ContextCachePlan, BatchModelPass, ProviderProfile, Cost-per-Gain, FrontierROIReport.
 
+**Evidence status:** weak until measured against real agent traces.
+
 ### 5. Vendor lock-in
 
 Lock-in is not only API syntax. It comes from native skills, hidden tool semantics, memory tools, caching behavior, provider fallback semantics, retention policies, and model quirks.
 
 **CAK response:** CAK IR as canonical object format, ProviderProfile, NativeBinding, FallbackGraph, FeatureParityTest, DataRoutingPolicy, PortabilityIndex.
+
+**Evidence status:** supported at API-shape level by provider tool-use docs;
+semantic portability still needs a benchmark.
 
 ## P1 pains
 

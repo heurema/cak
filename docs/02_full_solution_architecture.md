@@ -61,11 +61,11 @@ CAK should sit:
 The first product slice should not implement the whole stack.
 
 ```text
-Existing agent runtime
+Existing SaaS/ops agent runtime
   -> CAK proposal gateway
   -> effect/capability verifier
   -> policy engine
-  -> credential-owning tool gateway
+  -> credential-owning MCP gateway/proxy
   -> external tool
   -> trace recorder
 ```
@@ -73,6 +73,11 @@ Existing agent runtime
 This cut proves whether teams accept CAK at the tool boundary. Learning
 compilers, Artifact Registry, provider portability, multi-agent semantics, and
 organization-scale governance remain vision-stage until this cut works.
+
+Coding agents are a possible later target, but many already sit behind git, CI,
+code review, and vendor permission layers. SaaS and operations agents are the
+cleaner first target because their external effects are less consistently
+governed today.
 
 ## Runtime flow
 

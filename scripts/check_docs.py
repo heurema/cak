@@ -16,6 +16,8 @@ root = Path(__file__).resolve().parents[1]
 
 required = [
     "README.md",
+    "evidence/README.md",
+    "evidence/p0_pain_sources.md",
     "docs/00_project_thesis.md",
     "docs/01_pain_map.md",
     "docs/02_full_solution_architecture.md",
@@ -23,6 +25,8 @@ required = [
     "docs/10_roadmap.md",
     "docs/13_v0_1_wedge_and_non_goals.md",
     "docs/14_grounding_enforcement_replay.md",
+    "docs/15_authoring_economics.md",
+    "docs/16_cak_failure_modes.md",
     "schemas/cak_ir.schema.json",
     "schemas/task_capsule.schema.json",
     "schemas/effect_spec.schema.json",
@@ -32,7 +36,6 @@ required = [
     "examples/policy_pack.yaml",
     "examples/provider_profile.yaml",
     "examples/task_capsule.yaml",
-    "prompts/CODEX_CREATE_PUBLIC_REPO.md",
 ]
 
 

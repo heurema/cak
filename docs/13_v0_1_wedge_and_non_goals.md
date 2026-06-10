@@ -14,8 +14,8 @@ validate whether teams will accept CAK in the critical path of agent execution.
 
 ## Target user
 
-The first target user is a team running a coding or operations agent with access
-to local files, GitHub, shell commands, or a small set of SaaS APIs.
+The first target user is a team running a SaaS or operations agent with access
+to systems such as CRM, billing, ticketing, deployment, Slack, or finance APIs.
 
 The first pain is unsafe or unexplained external action:
 
@@ -35,6 +35,7 @@ v0.1 should include:
 - Capability manifest for tools and identities.
 - Pre-execution verifier.
 - Tool gateway that owns credentials and dispatches allowed calls.
+- MCP gateway/proxy form factor where possible.
 - Trace recorder for proposals, decisions, tool calls, and outcomes.
 - Minimal replay using recorded tool calls and semantic checkpoints.
 - Example integration with one existing agent stack.
@@ -53,6 +54,21 @@ Level 4: Verified learning artifacts and unlearning
 
 Teams should not need to adopt learning, registry, provider portability, or
 multi-agent features to get value from Level 1.
+
+## Preferred form factor
+
+v0.1 should be an MCP gateway/proxy when the target agent stack supports MCP:
+
+```text
+agent
+  -> MCP client
+  -> CAK MCP gateway/proxy
+  -> verifier
+  -> upstream MCP server or SaaS API
+```
+
+This keeps integration cost low and makes enforcement real because the gateway
+owns the governed credentials.
 
 ## Explicit non-goals for v0.1
 
@@ -103,4 +119,5 @@ Stop or redesign v0.1 if:
 - teams prefer LangSmith/OpenTelemetry traces plus OPA/Cedar policy with much
   less integration cost;
 - traces cannot answer denial and approval questions without manual log digging.
-
+- developers do not use CAK traces for debugging and treat CAK only as a
+  compliance blocker.

@@ -5,10 +5,10 @@
 The first shipped slice should be:
 
 ```text
-Tool-boundary governance + trace for one class of agent
+MCP gateway/proxy + tool-boundary governance + trace for one class of agent
 ```
 
-The initial target is a coding or operations agent with a small set of governed
+The initial target is a SaaS or operations agent with a small set of governed
 tools. v0.1 should prove action classification, capability checks, policy
 decisions, gateway enforcement, and trace explanation before learning or
 portability work.
@@ -19,11 +19,11 @@ portability work.
 2. EffectSpec for governed tool calls.
 3. Capability manifest bound to real tool identity.
 4. PolicySpec with a chosen predicate language.
-5. Credential-owning tool gateway.
+5. Credential-owning MCP gateway/proxy.
 6. Pre-execution verifier.
 7. Trace schema and recorder.
 8. Semantic replay harness for recorded tool calls.
-9. One integration example with an existing agent stack.
+9. One integration example with an existing MCP-capable agent stack.
 10. Baseline comparison against trace-only plus existing policy engine.
 
 ## Full-solution milestones
@@ -39,7 +39,7 @@ portability work.
 ## First artifacts to build
 
 1. v0.1 Action/Effect/Policy schemas.
-2. Tool gateway prototype.
+2. MCP gateway/proxy prototype.
 3. Simple verifier.
 4. Trace schema.
 5. Semantic replay harness.
@@ -58,6 +58,12 @@ Architect as:
 
 ```text
 Tool-boundary governance with trace, then evidence-backed learning
+```
+
+Preferred first domain:
+
+```text
+SaaS / operations tools before coding agents
 ```
 
 ## Avoid early

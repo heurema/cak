@@ -32,6 +32,9 @@ Tool-using agent
 v0.1 should prove tool-boundary governance before attempting automatic learning,
 full replay, multi-agent coordination, or provider portability.
 
+The preferred v0.1 form factor is an MCP gateway/proxy for SaaS and operations
+agents, because it can govern tool calls without requiring agent rewrites.
+
 ## Core loop
 
 ```text
@@ -65,9 +68,9 @@ Observation
 
 ```text
 docs/       Project thesis, pain map, architecture, runtime, governance, evals
+evidence/   Source ledger for pain claims and market assumptions
 schemas/    Draft CAK IR, TaskCapsule, EffectSpec, SkillSpec, PolicySpec schemas
 examples/   Example CAK specs and provider/profile artifacts
-prompts/    Codex prompt for creating and publishing the GitHub repository
 ```
 
 ## Naming
@@ -93,3 +96,5 @@ Start with:
 
 - [v0.1 Wedge and Non-Goals](docs/13_v0_1_wedge_and_non_goals.md)
 - [Grounding, Enforcement, and Replay](docs/14_grounding_enforcement_replay.md)
+- [Authoring Economics](docs/15_authoring_economics.md)
+- [CAK Failure Modes](docs/16_cak_failure_modes.md)

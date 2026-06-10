@@ -14,6 +14,7 @@
 | Silent drift | Provider/env/policy changes invalidate behavior | ProviderProfile diff, EnvDiff, replay suites |
 | Repo poisoning | Config/hooks/rules manipulate coding agent | Trust inspector, context firewall, secret scan |
 | Trace exfiltration | Trace store leaks PII, secrets, prompts, or tool output | Redaction, payload separation, retention rules, encrypted sensitive payloads |
+| CAK compromise | Gateway, verifier, or policy package is attacked | Least privilege, signed releases, break-glass, fail-open/fail-closed rules |
 
 ## Verifier stack
 
@@ -36,7 +37,7 @@ L1 policy checked
 L2 sandbox tested
 L3 regression tested
 L4 temporal/model checked
-L5 formally proven / certified
+L5 formally proven or externally certified by a real certifying authority
 ```
 
 Example requirements:

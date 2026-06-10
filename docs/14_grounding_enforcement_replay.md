@@ -55,7 +55,7 @@ The runtime pattern should be:
 Agent process
   -> CAK proposal gateway
   -> verifier
-  -> tool gateway with credentials
+  -> MCP gateway/proxy with credentials
   -> external system
 ```
 
@@ -170,3 +170,13 @@ CAK should be positioned against composition of existing systems:
 If these tools cover the v0.1 use case with much lower cost, CAK should simplify
 or integrate with them instead of duplicating them.
 
+## First user segment
+
+SaaS and operations agents are the cleaner v0.1 target because their effects
+often cross organizational boundaries: customer records, invoices, tickets,
+deployments, notifications, and billing systems.
+
+Coding agents remain relevant, but many coding workflows already have git, CI,
+review, and sandbox layers. CAK should enter coding-agent workflows only where it
+controls actions not already governed by those layers, such as shell, network,
+secrets, and deploys.
