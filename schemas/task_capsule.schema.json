@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TaskCapsule",
+  "type": "object",
+  "required": [
+    "id",
+    "goal",
+    "constraints",
+    "budget",
+    "verifier_plan"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "goal": {
+      "type": "string"
+    },
+    "env_ref": {
+      "type": "string"
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "input_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "output_schema": {
+      "type": "string"
+    },
+    "budget": {
+      "type": "object",
+      "properties": {
+        "max_usd": {
+          "type": "number"
+        },
+        "max_tokens": {
+          "type": "integer"
+        },
+        "max_tool_calls": {
+          "type": "integer"
+        },
+        "max_frontier_calls": {
+          "type": "integer"
+        }
+      }
+    },
+    "provider_policy": {
+      "type": "object"
+    },
+    "verifier_plan": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

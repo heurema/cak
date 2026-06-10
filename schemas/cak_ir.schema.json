@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://heurema.org/schemas/cak/cak_ir.schema.json",
+  "title": "CAK IR Artifact",
+  "type": "object",
+  "required": [
+    "cak_ir_version",
+    "kind",
+    "id",
+    "metadata"
+  ],
+  "properties": {
+    "cak_ir_version": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "GoalSpec",
+        "EnvSpec",
+        "ActionSpec",
+        "EffectSpec",
+        "SkillSpec",
+        "MemoryRecord",
+        "PolicySpec",
+        "TransactionSpec",
+        "EvidenceSpec",
+        "ScopeSpec",
+        "VerifierPlan",
+        "ReplaySpec",
+        "EvalSpec",
+        "ProviderProfile",
+        "TaskCapsule",
+        "IncidentReport"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "created_at",
+        "status"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "candidate",
+            "shadow_tested",
+            "verified",
+            "approved",
+            "active",
+            "deprecated",
+            "quarantined",
+            "archived"
+          ]
+        },
+        "owner": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "scope": {
+      "$ref": "#/$defs/scope"
+    },
+    "evidence": {
+      "$ref": "#/$defs/evidence"
+    }
+  },
+  "$defs": {
+    "scope": {
+      "type": "object",
+      "properties": {
+        "env": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tenant": {
+          "type": "string"
+        },
+        "role": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data_class": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "valid_until": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "source_traces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "counterexamples": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "verifier_reports": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

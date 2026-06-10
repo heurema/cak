@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PolicySpec",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "when",
+    "enforcement"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "when": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "requires": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "enforcement": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "warn",
+        "block",
+        "require_approval",
+        "sandbox_only",
+        "quarantine"
+      ]
+    },
+    "proof_level": {
+      "type": "string",
+      "enum": [
+        "L0",
+        "L1",
+        "L2",
+        "L3",
+        "L4",
+        "L5"
+      ]
+    }
+  }
+}

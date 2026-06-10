@@ -1,0 +1,69 @@
+agent: CustomerBillingAgent
+
+env:
+  use: crm_v3
+
+goal: send_invoice
+inputs:
+  - customer_email
+  - amount
+  - due_date
+achieve:
+  - invoice.status == "sent"
+constraints:
+  - amount > 0
+  - no_duplicate_invoice(customer_email, amount, billing_period)
+
+effect:
+  id: effect.crm.create_invoice
+  action: crm.create_invoice
+  requires:
+    - customer.exists(email=customer_email)
+    - due_date.present
+  causes:
+    - invoice.exists
+    - invoice.status == "draft"
+  may_cause:
+    - email.notification_queued
+  reversibility: compensable
+  risk: medium
+  evidence:
+    source_traces:
+      - trace_001
+      - trace_004
+    counterexamples:
+      - trace_012
+    confidence: 0.84
+
+skill:
+  id: skill.create_and_send_invoice
+  name: create_and_send_invoice
+  version: 0.1.0
+  trigger:
+    goal_matches: send_invoice
+  preconditions:
+    - valid_email(customer_email)
+    - amount > 0
+    - due_date.present
+  steps:
+    - customer = crm.find_customer(email=customer_email)
+    - invoice = crm.create_invoice(customer.id, amount, due_date)
+    - crm.send_invoice(invoice.id)
+  postconditions:
+    - invoice.status == "sent"
+  rollback:
+    - crm.void_invoice(invoice.id)
+  tests:
+    - assert invoice.id != null
+    - assert invoice.status == "sent"
+    - assert no_duplicate_invoice
+  risk: medium
+  status: candidate
+
+policy:
+  id: policy.high_amount_requires_approval
+  name: high_amount_requires_approval
+  when:
+    - amount > 10000
+  enforcement: require_approval
+  proof_level: L2

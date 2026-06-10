@@ -1,0 +1,27 @@
+policies:
+  - id: policy.no_irreversible_without_approval
+    name: no_irreversible_without_approval
+    when:
+      - action.reversibility == irreversible
+      - env == live
+    requires:
+      - explicit_user_approval
+      - audit_log
+      - rollback_or_legal_exception
+    enforcement: require_approval
+    proof_level: L3
+
+  - id: policy.no_unverified_memory_for_high_risk
+    name: no_unverified_memory_for_high_risk
+    when:
+      - action.risk in [high, critical]
+      - decision.justification.uses Memory<unverified>
+    enforcement: block
+    proof_level: L1
+
+  - id: policy.no_delegation_laundering
+    name: no_delegation_laundering
+    when:
+      - delegate.requested_effect not_in caller.authority
+    enforcement: block
+    proof_level: L2

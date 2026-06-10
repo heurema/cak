@@ -1,0 +1,23 @@
+model_profile:
+  id: provider.openai.gpt_example
+  provider: openai
+  model_id: gpt-example
+  limits:
+    context_window: 1000000
+    max_output: 128000
+  pricing:
+    input_per_mtok: 5
+    output_per_mtok: 30
+  native_capabilities:
+    - structured_outputs
+    - tool_use
+    - web_search
+    - file_search
+    - background_mode
+  data_policy:
+    retention_days: unknown
+    allow_regulated_data: false
+  best_for:
+    - hard_reasoning
+    - architecture_synthesis
+    - code_review

@@ -1,0 +1,26 @@
+id: task_capsule.invoice_send_001
+goal: "Send invoice to customer after validating amount, due date, and duplicate risk."
+env_ref: env.crm_v3
+constraints:
+  - "no_duplicate_invoice"
+  - "high_amount_requires_approval"
+  - "no_external_send_without_verification"
+input_artifacts:
+  - skill.create_and_send_invoice
+  - effect.crm.create_invoice
+  - policy.high_amount_requires_approval
+output_schema: InvoiceSendResult
+budget:
+  max_usd: 1.00
+  max_tokens: 20000
+  max_tool_calls: 20
+  max_frontier_calls: 0
+provider_policy:
+  preferred_profile: cheap_verified
+  allow_frontier_escalation: false
+verifier_plan:
+  - static_typecheck
+  - policy_coverage
+  - pre_exec_effect_check
+  - postcondition_check
+  - audit_log_check
