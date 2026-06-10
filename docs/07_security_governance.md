@@ -9,9 +9,11 @@
 | Skill supply-chain | Imported skill encodes unsafe behavior | Signed registry, trust tiers, package audit |
 | Delegation laundering | Agent gets another agent to do forbidden work | Delegation contracts, authority inheritance |
 | Capability escalation | Tool or skill expands its own rights | Capability checker, no self-escalation |
+| Kernel bypass | Agent calls governed tool with direct credentials | Credential-owning tool gateway, no governed secrets in agent process |
 | Corrupt success | Final state succeeds but violates policy | Procedure-aware replay, Completion Under Policy |
 | Silent drift | Provider/env/policy changes invalidate behavior | ProviderProfile diff, EnvDiff, replay suites |
 | Repo poisoning | Config/hooks/rules manipulate coding agent | Trust inspector, context firewall, secret scan |
+| Trace exfiltration | Trace store leaks PII, secrets, prompts, or tool output | Redaction, payload separation, retention rules, encrypted sensitive payloads |
 
 ## Verifier stack
 
@@ -63,5 +65,6 @@ Privacy Owner
 
 - Human approval should be typed, scoped, and logged.
 - Approval tokens should expire.
+- Approval tokens should be non-replayable.
 - Low-risk reversible actions can be auto-approved by policy.
 - High-risk irreversible actions require explicit, preview-backed approval.

@@ -17,7 +17,7 @@ constraints:
 effect:
   id: effect.crm.create_invoice
   action: crm.create_invoice
-  requires:
+  preconditions:
     - customer.exists(email=customer_email)
     - due_date.present
   causes:
@@ -33,7 +33,10 @@ effect:
       - trace_004
     counterexamples:
       - trace_012
-    confidence: 0.84
+    support_count: 2
+    counterexample_count: 1
+    confidence_model: uncalibrated
+    confidence_label: medium
 
 skill:
   id: skill.create_and_send_invoice

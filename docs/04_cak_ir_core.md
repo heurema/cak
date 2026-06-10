@@ -10,7 +10,7 @@ CAK IR must be:
 - immutable;
 - versioned;
 - backend-neutral;
-- replayable;
+- semantically replayable;
 - auditable;
 - hashable;
 - diffable;
@@ -31,7 +31,7 @@ CAK IR must be:
 | `EvidenceSpec` | Trace-based proof-of-experience |
 | `ScopeSpec` | Applicability boundary |
 | `VerifierPlan` | Required checks and proof level |
-| `ReplaySpec` | Deterministic or shadow rerun plan |
+| `ReplaySpec` | Semantic replay, stubbed tool replay, or shadow rerun plan |
 | `EvalSpec` | Evaluation and regression cases |
 | `ProviderProfile` | Model/provider capabilities and constraints |
 | `TaskCapsule` | Portable unit of agent execution |
@@ -84,3 +84,14 @@ Cap<SelfModify, Skill>
 ```text
 Unsafe agency should fail type-checking before execution.
 ```
+
+## v0.1 typed boundary
+
+The first typed boundary is not the whole agent. It is the tool call:
+
+```text
+ActionProposal + EffectSpec + Capability + PolicySpec -> allow/block/approval
+```
+
+CAK IR becomes useful only when this boundary is enforceable by a tool gateway
+that owns the relevant credentials.

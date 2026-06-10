@@ -15,6 +15,8 @@ Draft
 
 ## Learning pipeline
 
+This is vision-stage, not v0.1 scope.
+
 ```text
 raw trace
   → episode
@@ -51,13 +53,19 @@ evidence:
     - trace_004
   counterexamples:
     - trace_012
-  confidence: 0.84
+  support_count: 2
+  counterexample_count: 1
+  confidence_model: uncalibrated
+  confidence_label: medium
   validity:
     env_scope: [crm_v3]
     expires_on:
       - schema_change
       - policy_change
 ```
+
+Numeric confidence should not appear until CAK has a documented update rule,
+calibration method, and minimum evidence threshold.
 
 ## Unlearning
 

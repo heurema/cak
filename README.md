@@ -16,6 +16,22 @@ Modern agents can act, but teams struggle to govern what agents learn, how they 
 
 CAK treats traces, effects, skills, memory, policies, provider bindings, approvals, and patches as replayable, auditable, portable software artifacts.
 
+## v0.1 wedge
+
+The first usable CAK slice is intentionally narrow:
+
+```text
+Tool-using agent
+-> structured action proposal
+-> effect and capability check
+-> policy decision
+-> tool gateway execution
+-> trace
+```
+
+v0.1 should prove tool-boundary governance before attempting automatic learning,
+full replay, multi-agent coordination, or provider portability.
+
 ## Core loop
 
 ```text
@@ -66,8 +82,14 @@ Earlier working names such as **CAK-L**, **TraceLang**, and **TLIR** are now tre
 
 ## First repo goal
 
-Document the full solution before cutting the MVP:
+Document the full solution, then cut it down to a testable v0.1:
 
 ```text
-CAK Spec → CAK IR → Agent VM → Evidence/Scope → Verifier → Artifact Registry → Replay/Eval → Provider/Cost/Governance
+v0.1: Agent proposal -> Effect/Capability -> Policy -> Tool Gateway -> Trace
+vision: CAK Spec -> CAK IR -> Agent VM -> Evidence/Scope -> Verifier -> Artifact Registry -> Replay/Eval -> Provider/Cost/Governance
 ```
+
+Start with:
+
+- [v0.1 Wedge and Non-Goals](docs/13_v0_1_wedge_and_non_goals.md)
+- [Grounding, Enforcement, and Replay](docs/14_grounding_enforcement_replay.md)

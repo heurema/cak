@@ -6,6 +6,10 @@ CARE = Causal Adaptation, Replay, and Enforcement.
 
 CAK should not rely only on first-pass success benchmarks. It should evaluate whether an agent can fail, learn safely, replay, and improve without repeating the same failure or violating policy.
 
+CARE-Bench should be built early enough to challenge the architecture before the
+full stack exists. The first harness can test tool-boundary enforcement and
+semantic replay without any learning compiler.
+
 ## Core benchmark question
 
 ```text
@@ -49,6 +53,9 @@ Scenario Family
 ## Baselines
 
 ```text
+OpenTelemetry trace only
+LangSmith/Weave/Phoenix-style trace filtering
+OPA/Cedar policy check at tool boundary
 No memory
 Raw transcript
 Vector retrieval memory
@@ -62,3 +69,7 @@ Full CAK with Evidence/Scope/Verifier/Replay
 ## Benchmark warning
 
 If raw transcript or simple vector memory matches CAK on second-attempt lift and drift adaptation, the full architecture is overbuilt and should be simplified.
+
+For v0.1, if trace-only plus an existing policy engine answers the same audit
+and enforcement questions with materially lower integration cost, CAK should
+integrate with that stack or narrow further.

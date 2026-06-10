@@ -10,5 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install validation dependencies
+        run: python3 -m pip install --user PyYAML jsonschema
       - name: Validate docs and JSON schemas
         run: python3 scripts/check_docs.py

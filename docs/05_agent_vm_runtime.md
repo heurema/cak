@@ -10,6 +10,9 @@ Runtime commits.
 
 The LLM should not directly mutate the world, memory, skills, policies, or itself.
 
+For governed tools, the LLM process should not hold direct credentials. CAK can
+enforce policy only when calls pass through a credential-owning tool gateway.
+
 ## Agent VM instruction sketch
 
 ```text
@@ -71,3 +74,19 @@ propose → preflight → simulate → preview → approve → commit → verify
 ```
 
 not as unguarded `call_tool()`.
+
+## Enforcement boundary
+
+The minimum enforceable runtime pattern is:
+
+```text
+agent runtime
+  -> structured proposal
+  -> verifier
+  -> tool gateway
+  -> external system
+```
+
+If the agent can call the external system directly, CAK is advisory only. The
+first implementation should make this boundary explicit before adding learning
+or provider portability.

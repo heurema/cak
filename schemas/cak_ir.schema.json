@@ -3,6 +3,7 @@
   "$id": "https://heurema.org/schemas/cak/cak_ir.schema.json",
   "title": "CAK IR Artifact",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "cak_ir_version",
     "kind",
@@ -11,7 +12,8 @@
   ],
   "properties": {
     "cak_ir_version": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^0\\.[0-9]+\\.[0-9]+$"
     },
     "kind": {
       "type": "string",
@@ -35,17 +37,19 @@
       ]
     },
     "id": {
-      "type": "string"
+      "$ref": "#/$defs/id"
     },
     "metadata": {
       "type": "object",
+      "additionalProperties": false,
       "required": [
         "created_at",
         "status"
       ],
       "properties": {
         "created_at": {
-          "type": "string"
+          "type": "string",
+          "format": "date-time"
         },
         "status": {
           "type": "string",
@@ -62,10 +66,11 @@
           ]
         },
         "owner": {
-          "type": "string"
+          "$ref": "#/$defs/id"
         },
         "version": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
         }
       }
     },
@@ -77,31 +82,40 @@
     }
   },
   "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$"
+    },
     "scope": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "env": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/$defs/id"
           }
         },
         "tenant": {
-          "type": "string"
+          "$ref": "#/$defs/id"
         },
         "role": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/$defs/id"
           }
         },
         "data_class": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/$defs/id"
           }
         },
         "valid_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_on": {
           "type": "array",
           "items": {
             "type": "string"
@@ -111,28 +125,48 @@
     },
     "evidence": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "source_traces": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/$defs/id"
           }
         },
         "counterexamples": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/$defs/id"
           }
         },
-        "confidence": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1
+        "support_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "counterexample_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "confidence_model": {
+          "type": "string",
+          "enum": [
+            "uncalibrated",
+            "beta_posterior",
+            "calibrated_eval"
+          ]
+        },
+        "confidence_label": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
         },
         "verifier_reports": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/$defs/id"
           }
         }
       }

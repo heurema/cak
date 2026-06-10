@@ -22,9 +22,22 @@ Portable unit of agent execution containing goal, env references, policy constra
 
 Guarded runtime that accepts model proposals, verifies them, executes allowed actions, records traces, and manages transactions.
 
+For governed actions, the Agent VM must route execution through a tool gateway
+that owns credentials.
+
+## Tool Gateway
+
+Credential-owning boundary that dispatches allowed tool calls after CAK policy
+checks.
+
 ## Trace
 
 Event-sourced record of agent execution.
+
+## Grounding
+
+Mapping raw external observations into typed state that policies and effects can
+evaluate.
 
 ## EvidenceSpec
 
@@ -49,3 +62,8 @@ Dependency graph connecting traces, evidence, effects, skills, policies, provide
 ## CARE-Bench
 
 Benchmark family for Causal Adaptation, Replay, and Enforcement.
+
+## Semantic Replay
+
+Replay that checks proposals, tool calls, decisions, outcomes, and semantic
+checkpoints rather than byte-identical model output.

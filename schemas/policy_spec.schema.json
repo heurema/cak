@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "PolicySpec",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "id",
     "name",
@@ -10,22 +11,16 @@
   ],
   "properties": {
     "id": {
-      "type": "string"
+      "$ref": "#/$defs/id"
     },
     "name": {
-      "type": "string"
+      "$ref": "#/$defs/id"
     },
     "when": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "$ref": "#/$defs/predicate_list"
     },
     "requires": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "$ref": "#/$defs/predicate_list"
     },
     "enforcement": {
       "type": "string",
@@ -48,6 +43,19 @@
         "L4",
         "L5"
       ]
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$"
+    },
+    "predicate_list": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     }
   }
 }

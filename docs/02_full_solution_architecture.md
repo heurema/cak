@@ -56,6 +56,24 @@ CAK should sit:
 - **beside runtimes** such as LangGraph, OpenAI Agents SDK, and Pydantic AI;
 - **below application logic** as a semantic execution and learning substrate.
 
+## v0.1 architecture cut
+
+The first product slice should not implement the whole stack.
+
+```text
+Existing agent runtime
+  -> CAK proposal gateway
+  -> effect/capability verifier
+  -> policy engine
+  -> credential-owning tool gateway
+  -> external tool
+  -> trace recorder
+```
+
+This cut proves whether teams accept CAK at the tool boundary. Learning
+compilers, Artifact Registry, provider portability, multi-agent semantics, and
+organization-scale governance remain vision-stage until this cut works.
+
 ## Runtime flow
 
 ```text
@@ -72,3 +90,5 @@ Goal
   → Replay suite validates behavior
   → Artifact registry updates trusted behavior
 ```
+
+In v0.1, the runtime flow stops at checked execution and trace recording.
