@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "crm-governed": {
+      "command": "python3",
+      "args": [
+        "-m", "cak.gateway",
+        "--config", "examples/v0_1/gateway_config.json",
+        "--identity", "billing-agent",
+        "--trace", ".cak/trace.jsonl",
+        "--approvals", ".cak/approvals",
+        "--", "python3", "examples/v0_1/mock_crm_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "src"
+      }
+    }
+  }
+}

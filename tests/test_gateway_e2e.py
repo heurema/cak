@@ -10,6 +10,7 @@ from typing import IO, Any
 
 import pytest
 
+from cak.approvals import ApprovalStore
 from cak.replay import replay
 from cak.specs import load_config_file
 from cak.trace import read_trace
@@ -44,8 +45,9 @@ def _call(stdin: IO[bytes], stdout: IO[bytes], call_id: int, amount: float) -> d
 
 
 @pytest.fixture()
-def gateway(tmp_path: Path) -> Iterator[tuple[subprocess.Popen[bytes], Path]]:
+def gateway(tmp_path: Path) -> Iterator[tuple[subprocess.Popen[bytes], Path, Path]]:
     trace_path = tmp_path / "session.jsonl"
+    approvals_path = tmp_path / "approvals"
     env = dict(os.environ)
     env["PYTHONPATH"] = str(ROOT / "src")
     process = subprocess.Popen(
@@ -54,6 +56,7 @@ def gateway(tmp_path: Path) -> Iterator[tuple[subprocess.Popen[bytes], Path]]:
             "--config", str(CONFIG),
             "--identity", "billing-agent",
             "--trace", str(trace_path),
+            "--approvals", str(approvals_path),
             "--", sys.executable, str(MOCK),
         ],
         stdin=subprocess.PIPE,
@@ -61,7 +64,7 @@ def gateway(tmp_path: Path) -> Iterator[tuple[subprocess.Popen[bytes], Path]]:
         env=env,
     )
     try:
-        yield process, trace_path
+        yield process, trace_path, approvals_path
     finally:
         if process.stdin is not None:
             process.stdin.close()
@@ -70,9 +73,9 @@ def gateway(tmp_path: Path) -> Iterator[tuple[subprocess.Popen[bytes], Path]]:
 
 
 def test_end_to_end_allow_approve_block(
-    gateway: tuple[subprocess.Popen[bytes], Path],
+    gateway: tuple[subprocess.Popen[bytes], Path, Path],
 ) -> None:
-    process, trace_path = gateway
+    process, trace_path, approvals_path = gateway
     assert process.stdin is not None and process.stdout is not None
 
     init = _rpc(process.stdin, process.stdout,
@@ -84,13 +87,26 @@ def test_end_to_end_allow_approve_block(
     assert invoice["status"] == "draft"
 
     approval = _call(process.stdin, process.stdout, 2, 20000)
-    denial = json.loads(approval["result"]["content"][0]["text"])["cak_denial"]
+    payload = json.loads(approval["result"]["content"][0]["text"])
+    denial = payload["cak_denial"]
     assert approval["result"]["isError"] is True
     assert denial["enforcement"] == "require_approval"
     assert denial["fired_policies"] == ["policy.high_amount_requires_approval"]
     assert denial["effect_id"] == "effect.crm.create_invoice"
+    assert payload["retry_after_approval"] is True
 
-    blocked = _call(process.stdin, process.stdout, 3, -5)
+    # Human grants the queued request; the identical retry is forwarded.
+    store = ApprovalStore(approvals_path)
+    store.grant(payload["approval_request_id"], approver="test-operator")
+    retried = _call(process.stdin, process.stdout, 3, 20000)
+    assert retried["result"]["structuredContent"]["invoice"]["status"] == "draft"
+
+    # The token was single-use: the same call needs approval again.
+    repeated = _call(process.stdin, process.stdout, 4, 20000)
+    assert json.loads(repeated["result"]["content"][0]["text"])[
+        "cak_denial"]["enforcement"] == "require_approval"
+
+    blocked = _call(process.stdin, process.stdout, 5, -5)
     denial = json.loads(blocked["result"]["content"][0]["text"])["cak_denial"]
     assert denial["enforcement"] == "block"
 
@@ -100,10 +116,15 @@ def test_end_to_end_allow_approve_block(
 
     events = read_trace(trace_path)
     types = [event["type"] for event in events]
-    assert types.count("proposal") == 3
-    assert types.count("decision") == 3
-    assert types.count("outcome") == 1  # only the allowed call reached upstream
-    assert types.count("postconditions") == 1
+    assert types.count("proposal") == 5
+    assert types.count("decision") == 5
+    assert types.count("approval_requested") == 2
+    assert types.count("approval_consumed") == 1
+    assert types.count("outcome") == 2  # allowed call + approved retry
+    assert types.count("postconditions") == 2
+
+    consumed = next(e for e in events if e["type"] == "approval_consumed")
+    assert consumed["approved_by"] == "test-operator"
 
     postconditions = next(e for e in events if e["type"] == "postconditions")
     assert postconditions["checks"]['invoice.status == "draft"'] == "true"
@@ -111,6 +132,6 @@ def test_end_to_end_allow_approve_block(
 
     report = replay(load_config_file(CONFIG), trace_path)
     assert report.ok
-    assert report.proposals == 3
-    assert report.decisions_checked == 3
-    assert report.postconditions_checked == 1
+    assert report.proposals == 5
+    assert report.decisions_checked == 5
+    assert report.postconditions_checked == 2
