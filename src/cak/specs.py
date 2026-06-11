@@ -1,0 +1,138 @@
+"""Typed gateway configuration: actions, effects, policies, capabilities.
+
+Field names follow schemas/*.schema.json and examples/invoice_agent.cak.yaml.
+"""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+
+RISK_LEVELS = ("low", "medium", "high", "critical")
+REVERSIBILITY = ("reversible", "compensable", "irreversible")
+ENFORCEMENTS = ("allow", "warn", "block", "require_approval", "sandbox_only", "quarantine")
+
+
+class ConfigError(ValueError):
+    """Raised when gateway configuration is structurally invalid."""
+
+
+@dataclass(frozen=True, slots=True)
+class ActionSpec:
+    name: str
+    required_params: tuple[str, ...] = ()
+    effect: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class EffectSpec:
+    id: str
+    action: str
+    preconditions: tuple[str, ...]
+    causes: tuple[str, ...]
+    may_cause: tuple[str, ...]
+    risk: str
+    reversibility: str
+
+
+@dataclass(frozen=True, slots=True)
+class PolicySpec:
+    id: str
+    name: str
+    when: tuple[str, ...]
+    enforcement: str
+    proof_level: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class GatewayConfig:
+    actions: dict[str, ActionSpec]
+    effects_by_action: dict[str, EffectSpec]
+    policies: tuple[PolicySpec, ...]
+    capabilities: dict[str, tuple[str, ...]] = field(default_factory=dict)
+
+    def allowed(self, identity: str, action: str) -> bool:
+        grants = self.capabilities.get(identity, ())
+        return any(
+            grant == action or (grant.endswith(".*") and action.startswith(grant[:-1]))
+            for grant in grants
+        )
+
+
+def _require(obj: dict[str, Any], key: str, label: str) -> Any:
+    if key not in obj:
+        raise ConfigError(f"{label}: missing required field '{key}'")
+    return obj[key]
+
+
+def _str_tuple(value: Any, label: str) -> tuple[str, ...]:
+    if value is None:
+        return ()
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise ConfigError(f"{label}: expected a list of strings")
+    return tuple(value)
+
+
+def load_config(data: dict[str, Any]) -> GatewayConfig:
+    actions: dict[str, ActionSpec] = {}
+    for raw in data.get("actions", []):
+        name = str(_require(raw, "name", "action"))
+        actions[name] = ActionSpec(
+            name=name,
+            required_params=_str_tuple(raw.get("required_params"), f"action {name}"),
+            effect=raw.get("effect"),
+        )
+
+    effects: dict[str, EffectSpec] = {}
+    for raw in data.get("effects", []):
+        effect_id = str(_require(raw, "id", "effect"))
+        action = str(_require(raw, "action", f"effect {effect_id}"))
+        risk = str(_require(raw, "risk", f"effect {effect_id}"))
+        reversibility = str(_require(raw, "reversibility", f"effect {effect_id}"))
+        if risk not in RISK_LEVELS:
+            raise ConfigError(f"effect {effect_id}: unknown risk '{risk}'")
+        if reversibility not in REVERSIBILITY:
+            raise ConfigError(f"effect {effect_id}: unknown reversibility '{reversibility}'")
+        effects[action] = EffectSpec(
+            id=effect_id,
+            action=action,
+            preconditions=_str_tuple(raw.get("preconditions"), f"effect {effect_id}"),
+            causes=_str_tuple(raw.get("causes"), f"effect {effect_id}"),
+            may_cause=_str_tuple(raw.get("may_cause"), f"effect {effect_id}"),
+            risk=risk,
+            reversibility=reversibility,
+        )
+
+    policies: list[PolicySpec] = []
+    for raw in data.get("policies", []):
+        policy_id = str(_require(raw, "id", "policy"))
+        enforcement = str(_require(raw, "enforcement", f"policy {policy_id}"))
+        if enforcement not in ENFORCEMENTS:
+            raise ConfigError(f"policy {policy_id}: unknown enforcement '{enforcement}'")
+        policies.append(
+            PolicySpec(
+                id=policy_id,
+                name=str(raw.get("name", policy_id)),
+                when=_str_tuple(_require(raw, "when", f"policy {policy_id}"), policy_id),
+                enforcement=enforcement,
+                proof_level=raw.get("proof_level"),
+            )
+        )
+
+    capabilities = {
+        str(identity): _str_tuple(grants, f"capabilities[{identity}]")
+        for identity, grants in data.get("capabilities", {}).items()
+    }
+
+    return GatewayConfig(
+        actions=actions,
+        effects_by_action=effects,
+        policies=tuple(policies),
+        capabilities=capabilities,
+    )
+
+
+def load_config_file(path: Path) -> GatewayConfig:
+    return load_config(json.loads(path.read_text(encoding="utf-8")))

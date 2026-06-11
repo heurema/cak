@@ -70,8 +70,27 @@ Observation
 docs/       Project thesis, pain map, architecture, runtime, governance, evals
 evidence/   Source ledger for pain claims and market assumptions
 schemas/    Draft CAK IR, TaskCapsule, EffectSpec, SkillSpec, PolicySpec schemas
-examples/   Example CAK specs and provider/profile artifacts
+examples/   Example CAK specs, provider/profile artifacts, v0.1 demo
+src/cak/    v0.1 runtime skeleton: specs, verifier, trace, replay, MCP gateway
+tests/      Verifier, trace/replay, and gateway end-to-end tests
 ```
+
+## v0.1 runtime skeleton
+
+The first executable slice (docs/13 scope, docs/17 positioning): typed specs,
+an embeddable pre-execution verifier, a JSONL trace recorder, semantic
+replay, and an MCP stdio gateway that owns upstream credentials.
+
+```sh
+ruff check src tests && mypy src && pytest
+PYTHONPATH=src python3 examples/v0_1/demo.py
+```
+
+The demo shows the wedge: auto-allow as `Effect<compensable>` with
+postcondition checks, `require_approval` and `block` as typed replayable
+denials, and replay over the recorded trace with decision and postcondition
+checkpoints. Predicates are an interim restricted surface until the policy
+language decision in `docs/11`.
 
 ## Naming
 

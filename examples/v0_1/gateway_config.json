@@ -1,0 +1,53 @@
+{
+  "actions": [
+    {
+      "name": "crm.create_invoice",
+      "required_params": ["customer_email", "amount", "due_date"],
+      "effect": "effect.crm.create_invoice"
+    },
+    {
+      "name": "crm.send_invoice",
+      "required_params": ["invoice_id"],
+      "effect": "effect.crm.send_invoice"
+    }
+  ],
+  "effects": [
+    {
+      "id": "effect.crm.create_invoice",
+      "action": "crm.create_invoice",
+      "preconditions": ["amount > 0", "due_date.present"],
+      "causes": ["invoice.status == \"draft\"", "invoice.id.present"],
+      "may_cause": ["email.notification_queued"],
+      "reversibility": "compensable",
+      "risk": "medium"
+    },
+    {
+      "id": "effect.crm.send_invoice",
+      "action": "crm.send_invoice",
+      "preconditions": ["invoice_id.present"],
+      "causes": ["invoice.status == \"sent\""],
+      "may_cause": [],
+      "reversibility": "compensable",
+      "risk": "high"
+    }
+  ],
+  "policies": [
+    {
+      "id": "policy.block_nonpositive_amount",
+      "name": "block_nonpositive_amount",
+      "when": ["amount <= 0"],
+      "enforcement": "block",
+      "proof_level": "L1"
+    },
+    {
+      "id": "policy.high_amount_requires_approval",
+      "name": "high_amount_requires_approval",
+      "when": ["amount > 10000"],
+      "enforcement": "require_approval",
+      "proof_level": "L2"
+    }
+  ],
+  "capabilities": {
+    "billing-agent": ["crm.*"]
+  }
+}
