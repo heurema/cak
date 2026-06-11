@@ -18,6 +18,15 @@ class TraceRecorder:
     path: Path
     _seq: int = 0
 
+    def __post_init__(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        if not self.path.exists():
+            return
+        for event in read_trace(self.path):
+            seq = event.get("seq")
+            if isinstance(seq, int):
+                self._seq = max(self._seq, seq)
+
     def emit(self, event_type: str, payload: dict[str, Any]) -> int:
         self._seq += 1
         record = {"seq": self._seq, "ts": time.time(), "type": event_type, **payload}

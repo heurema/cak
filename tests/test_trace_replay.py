@@ -47,6 +47,15 @@ def test_trace_roundtrip(tmp_path: Path, config: GatewayConfig) -> None:
     assert [event["seq"] for event in events] == [1, 2, 3, 4]
 
 
+def test_trace_append_continues_sequence(tmp_path: Path, config: GatewayConfig) -> None:
+    trace_path = tmp_path / "session.jsonl"
+    _record_session(config, trace_path)
+    _record_session(config, trace_path)
+
+    events = read_trace(trace_path)
+    assert [event["seq"] for event in events] == list(range(1, 9))
+
+
 def test_replay_matches_recorded_session(tmp_path: Path, config: GatewayConfig) -> None:
     trace_path = tmp_path / "session.jsonl"
     _record_session(config, trace_path)
@@ -55,6 +64,20 @@ def test_replay_matches_recorded_session(tmp_path: Path, config: GatewayConfig) 
     assert report.proposals == 1
     assert report.decisions_checked == 1
     assert report.postconditions_checked == 1
+
+
+def test_replay_handles_reused_call_ids_in_appended_sessions(
+    tmp_path: Path, config: GatewayConfig
+) -> None:
+    trace_path = tmp_path / "session.jsonl"
+    _record_session(config, trace_path)
+    _record_session(config, trace_path)
+
+    report = replay(config, trace_path)
+    assert report.ok
+    assert report.proposals == 2
+    assert report.decisions_checked == 2
+    assert report.postconditions_checked == 2
 
 
 def test_replay_detects_policy_change(tmp_path: Path, config: GatewayConfig) -> None:
