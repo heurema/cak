@@ -87,10 +87,16 @@ PYTHONPATH=src python3 examples/v0_1/demo.py
 ```
 
 The demo shows the wedge: auto-allow as `Effect<compensable>` with
-postcondition checks, `require_approval` and `block` as typed replayable
-denials, and replay over the recorded trace with decision and postcondition
+postcondition checks, `require_approval` with a scoped single-use approval
+token (`python3 -m cak.approve`, see docs/18), `block` as a typed replayable
+denial, and replay over the recorded trace with decision and postcondition
 checkpoints. Predicates are an interim restricted surface until the policy
 language decision in `docs/11`.
+
+To put the gateway in front of any MCP server for a real agent (for example
+Claude Code), point the client at the proxy command — see
+`examples/v0_1/mcp_config_example.json`. The agent needs zero code changes;
+upstream credentials live in the gateway environment.
 
 ## Naming
 

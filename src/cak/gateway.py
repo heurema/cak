@@ -10,8 +10,11 @@ real only when the kernel owns the tool boundary). `tools/call` requests are
 verified before forwarding; everything else passes through. Denials are
 answered with a typed, replayable audit object instead of a tool result.
 
-v0.1 approval semantics: `require_approval` denies the call and records the
-decision; interactive approval flows are out of scope for the skeleton.
+Approval semantics (docs/07, docs/18): `require_approval` checks the approval
+store for a valid single-use token scoped to this exact call (identity +
+action + args hash). With a token the call is forwarded and the consumption
+is traced; without one a typed denial is returned carrying a queued approval
+request id for `python -m cak.approve`.
 """
 
 from __future__ import annotations
@@ -25,6 +28,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, Any
 
+from .approvals import ApprovalStore
 from .predicates import evaluate_all
 from .specs import GatewayConfig, load_config_file
 from .trace import TraceRecorder
@@ -47,10 +51,12 @@ class Gateway:
         upstream_out: IO[bytes],
         client_in: IO[bytes],
         client_out: IO[bytes],
+        approvals: ApprovalStore | None = None,
     ) -> None:
         self._config = config
         self._identity = identity
         self._recorder = recorder
+        self._approvals = approvals
         self._upstream_in = upstream_in
         self._upstream_out = upstream_out
         self._client_in = client_in
@@ -68,7 +74,13 @@ class Gateway:
 
     # -- client -> upstream ------------------------------------------------
 
-    def _deny(self, message: dict[str, Any], decision_dict: dict[str, Any]) -> None:
+    def _deny(
+        self,
+        message: dict[str, Any],
+        decision_dict: dict[str, Any],
+        extra: dict[str, Any] | None = None,
+    ) -> None:
+        payload: dict[str, Any] = {"cak_denial": decision_dict, **(extra or {})}
         denial = {
             "jsonrpc": "2.0",
             "id": message.get("id"),
@@ -77,9 +89,7 @@ class Gateway:
                 "content": [
                     {
                         "type": "text",
-                        "text": json.dumps(
-                            {"cak_denial": decision_dict}, ensure_ascii=False
-                        ),
+                        "text": json.dumps(payload, ensure_ascii=False),
                     }
                 ],
             },
@@ -109,9 +119,42 @@ class Gateway:
         decision_dict = decision.to_dict()
         self._recorder.decision(call_id, decision_dict)
 
-        if decision.enforcement in {"block", "require_approval"}:
+        if decision.enforcement == "block":
             self._deny(message, decision_dict)
             return
+
+        if decision.enforcement == "require_approval":
+            token = (
+                self._approvals.consume(self._identity, action, arguments)
+                if self._approvals is not None
+                else None
+            )
+            if token is None:
+                extra: dict[str, Any] = {}
+                if self._approvals is not None:
+                    request_id = self._approvals.request(
+                        self._identity, action, arguments, decision_dict
+                    )
+                    self._recorder.emit(
+                        "approval_requested",
+                        {"call_id": call_id, "request_id": request_id},
+                    )
+                    extra = {
+                        "approval_request_id": request_id,
+                        "retry_after_approval": True,
+                    }
+                self._deny(message, decision_dict, extra)
+                return
+            self._recorder.emit(
+                "approval_consumed",
+                {
+                    "call_id": call_id,
+                    "request_id": token["request_id"],
+                    "approved_by": token["approved_by"],
+                    "expires_at": token["expires_at"],
+                    "args_hash": token["args_hash"],
+                },
+            )
 
         self._pending[call_id] = _PendingCall(action, decision.effect_id)
         self._send(self._upstream_in, message)
@@ -185,6 +228,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--identity", required=True)
     parser.add_argument("--trace", required=True, type=Path)
+    parser.add_argument("--approvals", type=Path, default=None,
+                        help="approval store directory (enables approval tokens)")
     parser.add_argument("upstream", nargs=argparse.REMAINDER,
                         help="-- upstream MCP server command")
     args = parser.parse_args(argv)
@@ -209,6 +254,7 @@ def main(argv: list[str] | None = None) -> int:
         upstream_out=process.stdout,
         client_in=sys.stdin.buffer,
         client_out=sys.stdout.buffer,
+        approvals=ApprovalStore(args.approvals) if args.approvals else None,
     )
     try:
         gateway.run()
