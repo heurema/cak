@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import IO, Any
 
 from .approvals import ApprovalStore
+from .mcp_stdio import read_message, write_message
 from .predicates import evaluate_all
 from .specs import GatewayConfig, load_config_file
 from .trace import TraceRecorder
@@ -62,15 +63,16 @@ class Gateway:
         self._client_in = client_in
         self._client_out = client_out
         self._pending: dict[Any, _PendingCall] = {}
+        self._client_framed = False
         self._write_lock = threading.Lock()
 
     # -- transport helpers -------------------------------------------------
 
-    def _send(self, stream: IO[bytes], message: dict[str, Any]) -> None:
-        data = json.dumps(message, ensure_ascii=False).encode("utf-8") + b"\n"
+    def _send(
+        self, stream: IO[bytes], message: dict[str, Any], framed: bool
+    ) -> None:
         with self._write_lock:
-            stream.write(data)
-            stream.flush()
+            write_message(stream, message, framed=framed)
 
     # -- client -> upstream ------------------------------------------------
 
@@ -94,18 +96,21 @@ class Gateway:
                 ],
             },
         }
-        self._send(self._client_out, denial)
+        self._send(self._client_out, denial, framed=self._client_framed)
 
-    def handle_client_message(self, line: bytes) -> None:
+    def handle_client_message(self, payload: bytes, framed: bool) -> None:
+        self._client_framed = framed
         try:
-            message = json.loads(line)
+            message = json.loads(payload)
         except json.JSONDecodeError:
-            self._upstream_in.write(line)
+            self._upstream_in.write(payload)
+            if not framed:
+                self._upstream_in.write(b"\n")
             self._upstream_in.flush()
             return
 
         if not (isinstance(message, dict) and message.get("method") == "tools/call"):
-            self._send(self._upstream_in, message)
+            self._send(self._upstream_in, message, framed=framed)
             return
 
         params = message.get("params") or {}
@@ -157,7 +162,7 @@ class Gateway:
             )
 
         self._pending[call_id] = _PendingCall(action, decision.effect_id)
-        self._send(self._upstream_in, message)
+        self._send(self._upstream_in, message, framed=framed)
 
     # -- upstream -> client ------------------------------------------------
 
@@ -177,11 +182,13 @@ class Gateway:
                 return parsed if isinstance(parsed, dict) else None
         return None
 
-    def handle_upstream_message(self, line: bytes) -> None:
+    def handle_upstream_message(self, payload: bytes) -> None:
         try:
-            message = json.loads(line)
+            message = json.loads(payload)
         except json.JSONDecodeError:
-            self._client_out.write(line)
+            self._client_out.write(payload)
+            if not self._client_framed:
+                self._client_out.write(b"\n")
             self._client_out.flush()
             return
 
@@ -206,21 +213,27 @@ class Gateway:
                 }
                 self._recorder.postconditions(call_id, effect.id, checks, context)
 
-        self._send(self._client_out, message)
+        self._send(self._client_out, message, framed=self._client_framed)
 
     # -- pumps ---------------------------------------------------------------
 
     def _pump_upstream(self) -> None:
-        for line in iter(self._upstream_out.readline, b""):
-            if line.strip():
-                self.handle_upstream_message(line)
+        while True:
+            message = read_message(self._upstream_out)
+            if message is None:
+                return
+            if message.payload.strip():
+                self.handle_upstream_message(message.payload)
 
     def run(self) -> None:
         thread = threading.Thread(target=self._pump_upstream, daemon=True)
         thread.start()
-        for line in iter(self._client_in.readline, b""):
-            if line.strip():
-                self.handle_client_message(line)
+        while True:
+            message = read_message(self._client_in)
+            if message is None:
+                return
+            if message.payload.strip():
+                self.handle_client_message(message.payload, framed=message.framed)
 
 
 def main(argv: list[str] | None = None) -> int:

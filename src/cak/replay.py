@@ -44,20 +44,34 @@ class ReplayReport:
         return not self.divergences
 
 
+def _proposal_without_decision(
+    proposals: list[dict[str, Any]], call_id: Any
+) -> dict[str, Any] | None:
+    for proposal in reversed(proposals):
+        if proposal.get("call_id") == call_id and "recorded_decision" not in proposal:
+            return proposal
+    return None
+
+
 def replay(config: GatewayConfig, trace_path: Path) -> ReplayReport:
     events = read_trace(trace_path)
     report = ReplayReport()
 
-    proposals: dict[Any, dict[str, Any]] = {}
-    decisions: dict[Any, dict[str, Any]] = {}
+    proposals: list[dict[str, Any]] = []
 
     for event in events:
         call_id = event.get("call_id")
         if event["type"] == "proposal":
-            proposals[call_id] = event
+            proposals.append(event)
             report.proposals += 1
         elif event["type"] == "decision":
-            decisions[call_id] = event["decision"]
+            proposal = _proposal_without_decision(proposals, call_id)
+            if proposal is None:
+                report.divergences.append(
+                    Divergence(call_id, "decision", "decision without proposal", None)
+                )
+            else:
+                proposal["recorded_decision"] = event["decision"]
         elif event["type"] == "postconditions":
             recorded_checks: dict[str, str] = event["checks"]
             outcome_context = event.get("result_context")
@@ -74,8 +88,9 @@ def replay(config: GatewayConfig, trace_path: Path) -> ReplayReport:
                         Divergence(call_id, "postconditions", recorded_checks, replayed)
                     )
 
-    for call_id, proposal_event in proposals.items():
-        recorded = decisions.get(call_id)
+    for proposal_event in proposals:
+        call_id = proposal_event.get("call_id")
+        recorded = proposal_event.get("recorded_decision")
         if recorded is None:
             report.divergences.append(
                 Divergence(call_id, "decision", "missing recorded decision", None)

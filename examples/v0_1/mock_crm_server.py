@@ -10,6 +10,8 @@ import json
 import sys
 from typing import Any
 
+from cak.mcp_stdio import read_message, write_message
+
 _INVOICES: dict[str, dict[str, Any]] = {}
 
 
@@ -46,11 +48,13 @@ def _handle_call(params: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> None:
-    for line in sys.stdin:
-        line = line.strip()
-        if not line:
+    while True:
+        envelope = read_message(sys.stdin.buffer)
+        if envelope is None:
+            return
+        if not envelope.payload.strip():
             continue
-        message = json.loads(line)
+        message = json.loads(envelope.payload)
         method = message.get("method")
         if method == "initialize":
             result: dict[str, Any] = {
@@ -61,17 +65,44 @@ def main() -> None:
         elif method == "tools/list":
             result = {
                 "tools": [
-                    {"name": "crm.create_invoice", "description": "Create a draft invoice"},
-                    {"name": "crm.send_invoice", "description": "Send an invoice"},
+                    {
+                        "name": "crm.create_invoice",
+                        "description": "Create a draft invoice",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "customer_email": {"type": "string"},
+                                "amount": {"type": "number"},
+                                "due_date": {"type": "string"},
+                            },
+                            "required": ["customer_email", "amount", "due_date"],
+                            "additionalProperties": False,
+                        },
+                    },
+                    {
+                        "name": "crm.send_invoice",
+                        "description": "Send an invoice",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {"invoice_id": {"type": "string"}},
+                            "required": ["invoice_id"],
+                            "additionalProperties": False,
+                        },
+                    },
                 ]
             }
         elif method == "tools/call":
             result = _handle_call(message.get("params") or {})
+        elif method == "resources/list":
+            result = {"resources": []}
+        elif method == "resources/templates/list":
+            result = {"resourceTemplates": []}
+        elif method == "prompts/list":
+            result = {"prompts": []}
         else:
             continue
         response = {"jsonrpc": "2.0", "id": message.get("id"), "result": result}
-        sys.stdout.write(json.dumps(response) + "\n")
-        sys.stdout.flush()
+        write_message(sys.stdout.buffer, response, framed=envelope.framed)
 
 
 if __name__ == "__main__":

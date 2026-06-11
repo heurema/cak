@@ -11,6 +11,7 @@ from typing import IO, Any
 import pytest
 
 from cak.approvals import ApprovalStore
+from cak.mcp_stdio import encode_message, read_message
 from cak.replay import replay
 from cak.specs import load_config_file
 from cak.trace import read_trace
@@ -32,6 +33,40 @@ def _call(stdin: IO[bytes], stdout: IO[bytes], call_id: int, amount: float) -> d
         stdin, stdout,
         {
             "jsonrpc": "2.0", "id": call_id, "method": "tools/call",
+            "params": {
+                "name": "crm.create_invoice",
+                "arguments": {
+                    "customer_email": "jane@example.com",
+                    "amount": amount,
+                    "due_date": "2026-07-01",
+                },
+            },
+        },
+    )
+
+
+def _framed_rpc(
+    stdin: IO[bytes], stdout: IO[bytes], request: dict[str, Any]
+) -> dict[str, Any]:
+    stdin.write(encode_message(request, framed=True))
+    stdin.flush()
+    response = read_message(stdout)
+    assert response is not None
+    assert response.framed
+    parsed: dict[str, Any] = json.loads(response.payload)
+    return parsed
+
+
+def _framed_call(
+    stdin: IO[bytes], stdout: IO[bytes], call_id: int, amount: float
+) -> dict[str, Any]:
+    return _framed_rpc(
+        stdin,
+        stdout,
+        {
+            "jsonrpc": "2.0",
+            "id": call_id,
+            "method": "tools/call",
             "params": {
                 "name": "crm.create_invoice",
                 "arguments": {
@@ -129,6 +164,69 @@ def test_end_to_end_allow_approve_block(
     postconditions = next(e for e in events if e["type"] == "postconditions")
     assert postconditions["checks"]['invoice.status == "draft"'] == "true"
     assert postconditions["checks"]["invoice.id.present"] == "true"
+
+    report = replay(load_config_file(CONFIG), trace_path)
+    assert report.ok
+    assert report.proposals == 5
+    assert report.decisions_checked == 5
+    assert report.postconditions_checked == 2
+
+
+def test_gateway_accepts_mcp_stdio_framing(
+    gateway: tuple[subprocess.Popen[bytes], Path, Path],
+) -> None:
+    process, trace_path, approvals_path = gateway
+    assert process.stdin is not None and process.stdout is not None
+
+    init = _framed_rpc(
+        process.stdin,
+        process.stdout,
+        {"jsonrpc": "2.0", "id": 0, "method": "initialize", "params": {}},
+    )
+    assert init["result"]["serverInfo"]["name"] == "mock-crm"
+
+    resources = _framed_rpc(
+        process.stdin,
+        process.stdout,
+        {"jsonrpc": "2.0", "id": 1, "method": "resources/list", "params": {}},
+    )
+    assert resources["result"]["resources"] == []
+
+    tools = _framed_rpc(
+        process.stdin,
+        process.stdout,
+        {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}},
+    )
+    create_invoice = next(
+        tool for tool in tools["result"]["tools"] if tool["name"] == "crm.create_invoice"
+    )
+    assert create_invoice["inputSchema"]["required"] == [
+        "customer_email", "amount", "due_date"
+    ]
+
+    allowed = _framed_call(process.stdin, process.stdout, 3, 500)
+    assert allowed["result"]["structuredContent"]["invoice"]["status"] == "draft"
+
+    approval = _framed_call(process.stdin, process.stdout, 4, 20000)
+    payload = json.loads(approval["result"]["content"][0]["text"])
+    assert payload["cak_denial"]["enforcement"] == "require_approval"
+    ApprovalStore(approvals_path).grant(
+        payload["approval_request_id"], approver="test-operator"
+    )
+
+    retried = _framed_call(process.stdin, process.stdout, 5, 20000)
+    assert retried["result"]["structuredContent"]["invoice"]["status"] == "draft"
+
+    repeated = _framed_call(process.stdin, process.stdout, 6, 20000)
+    assert json.loads(repeated["result"]["content"][0]["text"])[
+        "cak_denial"]["enforcement"] == "require_approval"
+
+    blocked = _framed_call(process.stdin, process.stdout, 7, -5)
+    assert json.loads(blocked["result"]["content"][0]["text"])[
+        "cak_denial"]["enforcement"] == "block"
+
+    process.stdin.close()
+    process.wait(timeout=5)
 
     report = replay(load_config_file(CONFIG), trace_path)
     assert report.ok
