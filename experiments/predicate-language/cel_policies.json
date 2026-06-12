@@ -1,0 +1,14 @@
+{
+  "policies": [
+    { "id": "P1_high_amount_approval", "actions": ["crm.create_invoice", "crm.send_invoice"], "enforcement": "require_approval", "expr": "args.amount > 10000" },
+    { "id": "P2_nonpositive_amount_block", "actions": ["crm.create_invoice"], "enforcement": "block", "expr": "args.amount <= 0" },
+    { "id": "P3_refund_above_200_approval", "actions": ["billing.refund_order"], "enforcement": "require_approval", "expr": "args.amount > 200" },
+    { "id": "P4_production_promotion_approval", "actions": ["deploy.promote_release"], "enforcement": "require_approval", "expr": "args.environment == 'production'" },
+    { "id": "P5_rotation_warn", "actions": ["secrets.rotate_key"], "enforcement": "warn", "expr": "true" },
+    { "id": "P6_refund_requires_reason", "actions": ["billing.refund_order"], "enforcement": "block", "expr": "!('reason' in args)" },
+    { "id": "P7_close_requires_note", "actions": ["tickets.close_ticket"], "enforcement": "block", "expr": "!('resolution_note' in args)" },
+    { "id": "P8_never_delete", "actions": ["tickets.delete_ticket"], "enforcement": "block", "expr": "true" },
+    { "id": "P9_refund_exceeds_order_total", "actions": ["billing.refund_order"], "enforcement": "block", "expr": "args.amount > args.order_total" },
+    { "id": "P10_unknown_environment_block", "actions": ["deploy.promote_release"], "enforcement": "block", "expr": "!(args.environment in ['staging', 'qa', 'production'])" }
+  ]
+}

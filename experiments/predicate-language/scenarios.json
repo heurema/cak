@@ -1,0 +1,19 @@
+{
+  "scenarios": [
+    { "id": "c01", "action": "crm.create_invoice", "args": { "amount": 500 }, "expect": "allow" },
+    { "id": "c02", "action": "crm.create_invoice", "args": { "amount": 20000 }, "expect": "require_approval" },
+    { "id": "c03", "action": "crm.create_invoice", "args": { "amount": 0 }, "expect": "block" },
+    { "id": "c04", "action": "crm.send_invoice", "args": { "amount": 20000 }, "expect": "require_approval" },
+    { "id": "c05", "action": "billing.refund_order", "args": { "amount": 150, "reason": "late", "order_total": 1000 }, "expect": "allow" },
+    { "id": "c06", "action": "billing.refund_order", "args": { "amount": 500, "reason": "defect", "order_total": 1000 }, "expect": "require_approval" },
+    { "id": "c07", "action": "billing.refund_order", "args": { "amount": 50, "order_total": 100 }, "expect": "block" },
+    { "id": "c08", "action": "billing.refund_order", "args": { "amount": 50, "reason": "x", "order_total": 30 }, "expect": "block" },
+    { "id": "c09", "action": "tickets.close_ticket", "args": { "ticket_id": "tk_1" }, "expect": "block" },
+    { "id": "c10", "action": "tickets.close_ticket", "args": { "ticket_id": "tk_1", "resolution_note": "done" }, "expect": "allow" },
+    { "id": "c11", "action": "tickets.delete_ticket", "args": { "ticket_id": "tk_1" }, "expect": "block" },
+    { "id": "c12", "action": "deploy.promote_release", "args": { "release_id": "rel_1", "environment": "production" }, "expect": "require_approval" },
+    { "id": "c13", "action": "deploy.promote_release", "args": { "release_id": "rel_1", "environment": "staging" }, "expect": "allow" },
+    { "id": "c14", "action": "deploy.promote_release", "args": { "release_id": "rel_1", "environment": "qa2" }, "expect": "block" },
+    { "id": "c15", "action": "secrets.rotate_key", "args": { "service": "api" }, "expect": "warn" }
+  ]
+}
