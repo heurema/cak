@@ -122,7 +122,10 @@ def verify(config: GatewayConfig, proposal: Proposal) -> Decision:
         if not policy.applies_to(proposal.action):
             continue
         results = evaluate_all(list(policy.when), proposal.arguments)
-        if results and all(truth is Truth.TRUE for truth in results.values()):
+        # Empty `when` = unconditional (logical AND over the empty set):
+        # an action-scoped policy with no predicates always fires for its
+        # actions. Both cold drafters in exp-004 assumed this independently.
+        if all(truth is Truth.TRUE for truth in results.values()):
             fired.append(policy.id)
             reasons.append(f"policy '{policy.id}' fired -> {policy.enforcement}")
             if _SEVERITY[policy.enforcement] > _SEVERITY[enforcement]:

@@ -84,6 +84,32 @@ def test_action_scoped_policy_fires_only_for_its_action() -> None:
     assert refund.fired_policies == ()
 
 
+def test_empty_when_is_unconditional() -> None:
+    from cak.specs import load_config
+
+    unconditional = load_config(
+        {
+            "actions": [
+                {"name": "deploy.delete_environment", "required_params": ["environment"]},
+                {"name": "deploy.create_release", "required_params": ["service"]},
+            ],
+            "policies": [
+                {"id": "p.never_delete", "name": "never_delete", "when": [],
+                 "enforcement": "block", "actions": ["deploy.delete_environment"]},
+            ],
+            "capabilities": {"release-agent": ["deploy.*"]},
+        }
+    )
+    deleted = verify(unconditional, Proposal("release-agent", "deploy.delete_environment",
+                                             {"environment": "staging"}))
+    assert deleted.enforcement == "block"
+    assert deleted.fired_policies == ("p.never_delete",)
+
+    created = verify(unconditional, Proposal("release-agent", "deploy.create_release",
+                                             {"service": "api"}))
+    assert created.enforcement == "allow"
+
+
 def test_strictest_policy_wins() -> None:
     from cak.specs import load_config
 
