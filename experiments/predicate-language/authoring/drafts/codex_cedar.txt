@@ -1,0 +1,60 @@
+// FILE: block.cedar
+permit(
+  principal,
+  action == Action::"crm.create_invoice",
+  resource
+) when { context.amount <= 0 };
+
+permit(
+  principal,
+  action == Action::"billing.refund_order",
+  resource
+) when { !(context has reason) };
+
+permit(
+  principal,
+  action == Action::"tickets.close_ticket",
+  resource
+) when { !(context has resolution_note) };
+
+permit(
+  principal,
+  action == Action::"tickets.delete_ticket",
+  resource
+);
+
+permit(
+  principal,
+  action == Action::"billing.refund_order",
+  resource
+) when { context.amount > context.order_total };
+
+permit(
+  principal,
+  action == Action::"deploy.promote_release",
+  resource
+) when { !["staging", "qa", "production"].contains(context.environment) };
+// FILE: require_approval.cedar
+permit(
+  principal,
+  action in [Action::"crm.create_invoice", Action::"crm.send_invoice"],
+  resource
+) when { context.amount > 10000 };
+
+permit(
+  principal,
+  action == Action::"billing.refund_order",
+  resource
+) when { context.amount > 200 };
+
+permit(
+  principal,
+  action == Action::"deploy.promote_release",
+  resource
+) when { context.environment == "production" };
+// FILE: warn.cedar
+permit(
+  principal,
+  action == Action::"secrets.rotate_key",
+  resource
+);

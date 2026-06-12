@@ -1,0 +1,44 @@
+entity User;
+entity Gateway;
+
+action "crm.create_invoice" appliesTo {
+  principal: [User],
+  resource: [Gateway],
+  context: { "amount": Long }
+};
+
+action "crm.send_invoice" appliesTo {
+  principal: [User],
+  resource: [Gateway],
+  context: { "amount": Long }
+};
+
+action "billing.refund_order" appliesTo {
+  principal: [User],
+  resource: [Gateway],
+  context: { "amount": Long, "order_total": Long, "reason"?: String }
+};
+
+action "tickets.close_ticket" appliesTo {
+  principal: [User],
+  resource: [Gateway],
+  context: { "ticket_id": String, "resolution_note"?: String }
+};
+
+action "tickets.delete_ticket" appliesTo {
+  principal: [User],
+  resource: [Gateway],
+  context: { "ticket_id": String }
+};
+
+action "deploy.promote_release" appliesTo {
+  principal: [User],
+  resource: [Gateway],
+  context: { "release_id": String, "environment": String }
+};
+
+action "secrets.rotate_key" appliesTo {
+  principal: [User],
+  resource: [Gateway],
+  context: { "service": String }
+};

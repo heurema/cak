@@ -1,16 +1,21 @@
 """exp-005 runner: evaluate the policy corpus in CEL, Rego/OPA, and Cedar.
 
-Usage:  /tmp/exp005-venv/bin/python experiments/predicate-language/run_comparison.py
+Usage:
+    /tmp/exp005-venv/bin/python experiments/predicate-language/run_comparison.py \
+        [--root DIR] [--langs cel,rego,cedar] [--out results.json]
 
-For each language: run the 15 scenarios, compare the strictest-wins
-enforcement against the expected outcome, and measure per-decision latency.
-CEL runs in-process (celpy); OPA and Cedar run via their CLIs (subprocess
-cost is part of the embedding-cost score until an in-process binding is
-adopted).
+`--root` points at a directory with the same layout (scenarios.json,
+cel_policies.json, rego/, cedar/) — used to score drafted policy sets in the
+authoring-ergonomics axis. For each language: run the 15 scenarios, compare
+the strictest-wins enforcement against the expected outcome, and measure
+per-decision latency. CEL runs in-process (celpy); OPA and Cedar run via
+their CLIs (subprocess cost is part of the embedding-cost score until an
+in-process binding is adopted).
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import statistics
 import subprocess
@@ -42,10 +47,10 @@ def percentile(samples: list[float], pct: float) -> float:
 # -- CEL ---------------------------------------------------------------------
 
 
-def build_cel() -> list[dict[str, Any]]:
+def build_cel(root: Path) -> list[dict[str, Any]]:
     env = celpy.Environment()
     compiled = []
-    for policy in json.loads((HERE / "cel_policies.json").read_text())["policies"]:
+    for policy in json.loads((root / "cel_policies.json").read_text())["policies"]:
         program = env.program(env.compile(policy["expr"]))
         compiled.append({**policy, "program": program})
     return compiled
@@ -66,11 +71,11 @@ def eval_cel(compiled: list[dict[str, Any]], action: str,
 # -- Rego / OPA --------------------------------------------------------------
 
 
-def eval_rego(action: str, args: dict[str, Any]) -> str:
+def eval_rego(action: str, args: dict[str, Any], root: Path) -> str:
     request = json.dumps({"action": action, "args": args})
     result = subprocess.run(
         ["opa", "eval", "--format", "json", "--stdin-input",
-         "--data", str(HERE / "rego" / "policies.rego"), "data.cak.fired"],
+         "--data", str(root / "rego" / "policies.rego"), "data.cak.fired"],
         input=request, capture_output=True, text=True, check=True,
     )
     expressions = json.loads(result.stdout)["result"][0]["expressions"][0]["value"]
@@ -83,15 +88,15 @@ CEDAR_TIERS = [("block", "block.cedar"), ("require_approval", "require_approval.
                ("warn", "warn.cedar")]
 
 
-def eval_cedar(action: str, args: dict[str, Any], workdir: Path) -> str:
+def eval_cedar(action: str, args: dict[str, Any], workdir: Path, root: Path) -> str:
     context_path = workdir / "context.json"
     context_path.write_text(json.dumps(args), encoding="utf-8")
     fired = []
     for tier, policy_file in CEDAR_TIERS:
         result = subprocess.run(
             [CEDAR, "authorize",
-             "--policies", str(HERE / "cedar" / policy_file),
-             "--entities", str(HERE / "cedar" / "entities.json"),
+             "--policies", str(root / "cedar" / policy_file),
+             "--entities", str(root / "cedar" / "entities.json"),
              "--principal", 'User::"support-agent"',
              "--action", f'Action::"{action}"',
              "--resource", 'Gateway::"tools"',
@@ -107,18 +112,28 @@ def eval_cedar(action: str, args: dict[str, Any], workdir: Path) -> str:
 
 
 def main() -> int:
-    scenarios = json.loads((HERE / "scenarios.json").read_text())["scenarios"]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", type=Path, default=HERE)
+    parser.add_argument("--langs", default="cel,rego,cedar")
+    parser.add_argument("--out", type=Path, default=None)
+    cli = parser.parse_args()
+    root = cli.root
+    langs = set(cli.langs.split(","))
+
+    scenarios = json.loads((root / "scenarios.json").read_text())["scenarios"]
     report: dict[str, Any] = {}
 
     import tempfile
     workdir = Path(tempfile.mkdtemp())
 
-    compiled_cel = build_cel()
-    evaluators = {
-        "cel": lambda a, g: eval_cel(compiled_cel, a, g),
-        "rego_opa_cli": eval_rego,
-        "cedar_cli": lambda a, g: eval_cedar(a, g, workdir),
-    }
+    evaluators: dict[str, Any] = {}
+    if "cel" in langs:
+        compiled_cel = build_cel(root)
+        evaluators["cel"] = lambda a, g: eval_cel(compiled_cel, a, g)
+    if "rego" in langs:
+        evaluators["rego_opa_cli"] = lambda a, g: eval_rego(a, g, root)
+    if "cedar" in langs:
+        evaluators["cedar_cli"] = lambda a, g: eval_cedar(a, g, workdir, root)
 
     for name, evaluate in evaluators.items():
         mismatches = []
@@ -151,9 +166,8 @@ def main() -> int:
               f"p50={report[name]['latency_ms']['p50']}ms "
               f"p99={report[name]['latency_ms']['p99']}ms")
 
-    (HERE / "results.json").write_text(
-        json.dumps(report, indent=2) + "\n", encoding="utf-8"
-    )
+    out_path = cli.out or (root / "results.json")
+    out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     ok = all(lang["correct"] == lang["scenarios"] for lang in report.values())
     return 0 if ok else 1
 

@@ -51,12 +51,61 @@ Notes per language:
   that is a real contortion. Carries the strongest formal-verification
   story (cedar-symcc, radar finding 2026-06-11).
 
-## Remaining before verdict (deadline 2026-07-02)
+## Formal-tooling axis — 2026-06-12
 
-- Authoring-ergonomics axis: re-run the exp-004 cold-draft protocol with
-  policies written in each language.
-- Formal-tooling axis: try cedar-symcc on the Cedar tier stores; survey
-  CEL/Rego equivalents.
+What is actually runnable today, checked on this machine:
+
+| Language | Static checking | Symbolic/formal verification |
+|---|---|---|
+| Cedar | `cedar validate` against a schema — **runs, all three stores pass** (`cedar/schema.cedarschema`) | `cedar-policy-symcc` 0.5.2 exists but is a **library** (Cedar→SMT, needs a Rust harness + cvc5/z3); no turnkey CLI |
+| CEL | type-checked compile against a declared environment (celpy/cel-go) | none mainstream; the guarantee is structural — non-Turing-complete, terminating, cost-bounded in cel-go |
+| Rego | `opa check`, `opa test`, coverage | none mainstream |
+
+Reading: Cedar's formal story is real but engineering-gated; CEL's guarantee
+is weaker but free; Rego sits between with the best test tooling.
+
+## Authoring-ergonomics axis — 2026-06-12
+
+Cold-draft protocol from exp-004: prose brief of the 10 corpus rules +
+per-language format reference (`authoring/inputs/`), empty temp dir, output
+scored by the same 15 scenarios.
+
+| Drafter | CEL | Rego | Cedar (3 stores) |
+|---|---|---|---|
+| claude sonnet | 15/15, 17 s | 15/15, 23 s | 15/15, 30 s |
+| codex (OpenAI) | 15/15, 22 s | 15/15, 19 s | 15/15, 24 s |
+
+**6/6 perfect, zero correction cycles.** The authoring axis does not
+discriminate: all three languages are drafting-friendly for this corpus.
+Drafts preserved under `authoring/drafts/`.
+
+## Summary across all axes
+
+| Axis | CEL | Rego | Cedar |
+|---|---|---|---|
+| Corpus coverage | 10/10 | 10/10 | 10/10 (tier encoding contortion) |
+| Embedding | **in-process, 10 s install** | subprocess or Go SDK, 45 s | subprocess ×3, 71 s |
+| Latency p99 | **0.37 ms** | 14.4 ms | 15.8 ms |
+| Termination guarantee | by design | by design | by design |
+| Formal tooling | none (structural only) | tests/coverage | **validate runs; symcc (lib-only)** |
+| Cold-draft authoring | 15/15 ×2 vendors | 15/15 ×2 vendors | 15/15 ×2 vendors |
+
+## Proposed verdict (for q-003 / cak docs/11 — owner ratifies)
+
+Adopt **CEL** for `PolicySpec.when` expressions in v0.2:
+
+- only in-process option for the Python runtime — no subprocess in the
+  enforcement hot path, 50–80× under the latency budget;
+- maps 1:1 onto the existing config shape: CAK keeps the PolicySpec
+  envelope (action scope, enforcement tiers, strictest-wins) and adopts a
+  predicate *language*, not a policy *framework*;
+- cheapest embedding, terminating by design, vendor-neutral spec.
+
+Positioning of the others: **Rego** — mechanical translation target when an
+org already runs OPA (proven by this corpus); **Cedar** — keep as a future
+*verification export* target: compile PolicySpec tiers to Cedar stores (this
+experiment did it by hand) and run schema validation / symcc when formal
+guarantees become a product requirement.
 
 ## Reproduce
 

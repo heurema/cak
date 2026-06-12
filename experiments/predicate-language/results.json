@@ -4,29 +4,9 @@
     "correct": 15,
     "mismatches": [],
     "latency_ms": {
-      "p50": 0.199,
-      "p99": 0.365,
+      "p50": 0.217,
+      "p99": 0.45,
       "samples": 750
-    }
-  },
-  "rego_opa_cli": {
-    "scenarios": 15,
-    "correct": 15,
-    "mismatches": [],
-    "latency_ms": {
-      "p50": 12.113,
-      "p99": 14.409,
-      "samples": 30
-    }
-  },
-  "cedar_cli": {
-    "scenarios": 15,
-    "correct": 15,
-    "mismatches": [],
-    "latency_ms": {
-      "p50": 13.057,
-      "p99": 15.848,
-      "samples": 30
     }
   }
 }
