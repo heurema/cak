@@ -47,6 +47,43 @@ def test_nonpositive_amount_blocked_by_precondition(config: GatewayConfig) -> No
     assert any("precondition failed: amount > 0" in reason for reason in decision.reasons)
 
 
+def test_action_scoped_policy_fires_only_for_its_action() -> None:
+    from cak.specs import load_config
+
+    scoped = load_config(
+        {
+            "actions": [
+                {"name": "tickets.delete_ticket", "required_params": ["ticket_id"]},
+                {"name": "tickets.close_ticket", "required_params": ["ticket_id"]},
+                {"name": "billing.refund_order", "required_params": ["amount"]},
+            ],
+            "policies": [
+                {"id": "p.never_delete", "name": "never_delete",
+                 "when": ["ticket_id.present"], "enforcement": "block",
+                 "actions": ["tickets.delete_ticket"]},
+                {"id": "p.ticket_ns_warn", "name": "ticket_ns_warn",
+                 "when": ["ticket_id.present"], "enforcement": "warn",
+                 "actions": ["tickets.*"]},
+            ],
+            "capabilities": {"support-agent": ["tickets.*", "billing.*"]},
+        }
+    )
+    deleted = verify(scoped, Proposal("support-agent", "tickets.delete_ticket",
+                                      {"ticket_id": "tk_001"}))
+    assert deleted.enforcement == "block"
+    assert deleted.fired_policies == ("p.never_delete", "p.ticket_ns_warn")
+
+    closed = verify(scoped, Proposal("support-agent", "tickets.close_ticket",
+                                     {"ticket_id": "tk_001"}))
+    assert closed.enforcement == "warn"
+    assert closed.fired_policies == ("p.ticket_ns_warn",)
+
+    refund = verify(scoped, Proposal("support-agent", "billing.refund_order",
+                                     {"amount": 10, "ticket_id": "tk_001"}))
+    assert refund.enforcement == "allow"
+    assert refund.fired_policies == ()
+
+
 def test_strictest_policy_wins() -> None:
     from cak.specs import load_config
 

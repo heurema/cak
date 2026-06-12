@@ -119,6 +119,8 @@ def verify(config: GatewayConfig, proposal: Proposal) -> Decision:
     fired: list[str] = []
     enforcement = "allow"
     for policy in config.policies:
+        if not policy.applies_to(proposal.action):
+            continue
         results = evaluate_all(list(policy.when), proposal.arguments)
         if results and all(truth is Truth.TRUE for truth in results.values()):
             fired.append(policy.id)

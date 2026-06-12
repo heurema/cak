@@ -59,6 +59,17 @@ class PolicySpec:
     when: tuple[str, ...]
     enforcement: str
     proof_level: str | None = None
+    # Optional action scope: empty = global; entries are exact action names
+    # or "prefix.*" globs (same matching as capabilities).
+    actions: tuple[str, ...] = ()
+
+    def applies_to(self, action: str) -> bool:
+        if not self.actions:
+            return True
+        return any(
+            entry == action or (entry.endswith(".*") and action.startswith(entry[:-1]))
+            for entry in self.actions
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -150,6 +161,7 @@ def load_config(data: dict[str, Any]) -> GatewayConfig:
                 when=_str_tuple(_require(raw, "when", f"policy {policy_id}"), policy_id),
                 enforcement=enforcement,
                 proof_level=raw.get("proof_level"),
+                actions=_str_tuple(raw.get("actions"), f"policy {policy_id}"),
             )
         )
 
