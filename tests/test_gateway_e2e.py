@@ -172,6 +172,43 @@ def test_end_to_end_allow_approve_block(
     assert report.postconditions_checked == 2
 
 
+def test_compensation_chain_end_to_end(
+    gateway: tuple[subprocess.Popen[bytes], Path, Path],
+) -> None:
+    process, trace_path, _ = gateway
+    assert process.stdin is not None and process.stdout is not None
+
+    _rpc(process.stdin, process.stdout,
+         {"jsonrpc": "2.0", "id": 0, "method": "initialize", "params": {}})
+
+    created = _call(process.stdin, process.stdout, 1, 500)
+    invoice_id = created["result"]["structuredContent"]["invoice"]["id"]
+
+    voided = _rpc(
+        process.stdin, process.stdout,
+        {
+            "jsonrpc": "2.0", "id": 2, "method": "tools/call",
+            "params": {"name": "crm.void_invoice",
+                       "arguments": {"invoice_id": invoice_id}},
+        },
+    )
+    assert voided["result"]["structuredContent"]["invoice"]["status"] == "void"
+
+    process.stdin.close()
+    process.wait(timeout=5)
+
+    events = read_trace(trace_path)
+    prepared = next(e for e in events if e["type"] == "compensation_prepared")
+    assert prepared["arguments"] == {"invoice_id": invoice_id}
+    executed = next(e for e in events if e["type"] == "compensation_executed")
+    assert executed["call_id"] == 2
+    assert executed["compensates_call_id"] == 1
+
+    report = replay(load_config_file(CONFIG), trace_path)
+    assert report.ok
+    assert report.postconditions_checked == 2
+
+
 def test_gateway_accepts_mcp_stdio_framing(
     gateway: tuple[subprocess.Popen[bytes], Path, Path],
 ) -> None:
