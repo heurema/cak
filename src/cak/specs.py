@@ -27,6 +27,20 @@ class ActionSpec:
 
 
 @dataclass(frozen=True, slots=True)
+class CompensationSpec:
+    """How to undo a compensable effect with another governed action.
+
+    Argument values are derived, not free-typed: dotted paths into the
+    original tool result (`args_from_result`) or into the original call
+    arguments (`args_from_args`).
+    """
+
+    action: str
+    args_from_result: dict[str, str] = field(default_factory=dict)
+    args_from_args: dict[str, str] = field(default_factory=dict)
+
+
+@dataclass(frozen=True, slots=True)
 class EffectSpec:
     id: str
     action: str
@@ -35,6 +49,7 @@ class EffectSpec:
     may_cause: tuple[str, ...]
     risk: str
     reversibility: str
+    compensation: CompensationSpec | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -95,6 +110,22 @@ def load_config(data: dict[str, Any]) -> GatewayConfig:
             raise ConfigError(f"effect {effect_id}: unknown risk '{risk}'")
         if reversibility not in REVERSIBILITY:
             raise ConfigError(f"effect {effect_id}: unknown reversibility '{reversibility}'")
+        compensation: CompensationSpec | None = None
+        raw_compensation = raw.get("compensation")
+        if raw_compensation is not None:
+            if not isinstance(raw_compensation, dict):
+                raise ConfigError(f"effect {effect_id}: compensation must be an object")
+            compensation = CompensationSpec(
+                action=str(_require(raw_compensation, "action", f"effect {effect_id}")),
+                args_from_result={
+                    str(k): str(v)
+                    for k, v in (raw_compensation.get("args_from_result") or {}).items()
+                },
+                args_from_args={
+                    str(k): str(v)
+                    for k, v in (raw_compensation.get("args_from_args") or {}).items()
+                },
+            )
         effects[action] = EffectSpec(
             id=effect_id,
             action=action,
@@ -103,6 +134,7 @@ def load_config(data: dict[str, Any]) -> GatewayConfig:
             may_cause=_str_tuple(raw.get("may_cause"), f"effect {effect_id}"),
             risk=risk,
             reversibility=reversibility,
+            compensation=compensation,
         )
 
     policies: list[PolicySpec] = []

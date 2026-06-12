@@ -15,6 +15,13 @@ store for a valid single-use token scoped to this exact call (identity +
 action + args hash). With a token the call is forwarded and the consumption
 is traced; without one a typed denial is returned carrying a queued approval
 request id for `python -m cak.approve`.
+
+Compensation semantics (docs/19): when a compensable effect completes, the
+gateway derives the compensating call from the typed CompensationSpec and
+traces it as `compensation_prepared`; a postcondition failure adds
+`compensation_suggested`. Nothing auto-fires — when the agent (or operator)
+issues the prepared call, it passes the verifier like any action and its
+success is traced as `compensation_executed`, linking the saga chain.
 """
 
 from __future__ import annotations
@@ -28,10 +35,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, Any
 
-from .approvals import ApprovalStore
+from .approvals import ApprovalStore, args_hash
 from .mcp_stdio import read_message, write_message
 from .predicates import evaluate_all
-from .specs import GatewayConfig, load_config_file
+from .specs import CompensationSpec, GatewayConfig, load_config_file
 from .trace import TraceRecorder
 from .verifier import Proposal, verify
 
@@ -40,6 +47,38 @@ from .verifier import Proposal, verify
 class _PendingCall:
     action: str
     effect_id: str | None
+    arguments: dict[str, Any]
+    compensates_call_id: Any = None
+
+
+def _dig(context: dict[str, Any], dotted: str) -> tuple[bool, Any]:
+    node: Any = context
+    for part in dotted.split("."):
+        if isinstance(node, dict) and part in node:
+            node = node[part]
+        else:
+            return False, None
+    return True, node
+
+
+def _derive_compensation(
+    spec: CompensationSpec,
+    arguments: dict[str, Any],
+    result_context: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Resolve compensation arguments; None when any path is unresolvable."""
+    derived: dict[str, Any] = {}
+    for param, path in spec.args_from_result.items():
+        found, value = _dig(result_context, path)
+        if not found:
+            return None
+        derived[param] = value
+    for param, path in spec.args_from_args.items():
+        found, value = _dig(arguments, path)
+        if not found:
+            return None
+        derived[param] = value
+    return derived
 
 
 class Gateway:
@@ -63,6 +102,8 @@ class Gateway:
         self._client_in = client_in
         self._client_out = client_out
         self._pending: dict[Any, _PendingCall] = {}
+        # (action, args_hash) -> call_id of the completed call it compensates.
+        self._prepared_compensations: dict[tuple[str, str], Any] = {}
         self._client_framed = False
         self._write_lock = threading.Lock()
 
@@ -161,7 +202,12 @@ class Gateway:
                 },
             )
 
-        self._pending[call_id] = _PendingCall(action, decision.effect_id)
+        compensates = self._prepared_compensations.pop(
+            (action, args_hash(arguments)), None
+        )
+        self._pending[call_id] = _PendingCall(
+            action, decision.effect_id, arguments, compensates
+        )
         self._send(self._upstream_in, message, framed=framed)
 
     # -- upstream -> client ------------------------------------------------
@@ -203,6 +249,8 @@ class Gateway:
                 error if isinstance(error, dict) else None,
             )
             effect = self._config.effects_by_action.get(pending.action)
+            context: dict[str, Any] | None = None
+            checks: dict[str, str] = {}
             if effect is not None and effect.causes and isinstance(result, dict):
                 context = self._result_context(result)
                 checks = {
@@ -212,6 +260,49 @@ class Gateway:
                     ).items()
                 }
                 self._recorder.postconditions(call_id, effect.id, checks, context)
+
+            prepared: dict[str, Any] | None = None
+            if (
+                effect is not None
+                and effect.compensation is not None
+                and error is None
+                and context is not None
+            ):
+                derived = _derive_compensation(
+                    effect.compensation, pending.arguments, context
+                )
+                if derived is not None:
+                    prepared = {
+                        "action": effect.compensation.action,
+                        "arguments": derived,
+                    }
+                    self._prepared_compensations[
+                        (effect.compensation.action, args_hash(derived))
+                    ] = call_id
+                    self._recorder.emit(
+                        "compensation_prepared",
+                        {"call_id": call_id, "effect_id": effect.id, **prepared},
+                    )
+
+            failed = [predicate for predicate, truth in checks.items() if truth == "false"]
+            if failed:
+                self._recorder.emit(
+                    "compensation_suggested",
+                    {
+                        "call_id": call_id,
+                        "failed_postconditions": failed,
+                        "compensation": prepared,
+                    },
+                )
+
+            if pending.compensates_call_id is not None and error is None:
+                self._recorder.emit(
+                    "compensation_executed",
+                    {
+                        "call_id": call_id,
+                        "compensates_call_id": pending.compensates_call_id,
+                    },
+                )
 
         self._send(self._client_out, message, framed=self._client_framed)
 

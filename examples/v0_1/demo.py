@@ -92,9 +92,21 @@ def main() -> int:
     print("--- identical retry after approval (amount=20000)")
     response = rpc(gateway.stdin, gateway.stdout, _call_request(3, 20000))
     print(json.dumps(response["result"], indent=2, ensure_ascii=False))
+    invoice_id = response["result"]["structuredContent"]["invoice"]["id"]
+
+    print(f"--- compensation: void {invoice_id} (prepared by the gateway, fired by the agent)")
+    response = rpc(
+        gateway.stdin, gateway.stdout,
+        {
+            "jsonrpc": "2.0", "id": 4, "method": "tools/call",
+            "params": {"name": "crm.void_invoice",
+                       "arguments": {"invoice_id": invoice_id}},
+        },
+    )
+    print(json.dumps(response["result"], indent=2, ensure_ascii=False))
 
     print("--- block (amount=-5)")
-    response = rpc(gateway.stdin, gateway.stdout, _call_request(4, -5))
+    response = rpc(gateway.stdin, gateway.stdout, _call_request(5, -5))
     print(json.dumps(response["result"], indent=2, ensure_ascii=False))
 
     gateway.stdin.close()

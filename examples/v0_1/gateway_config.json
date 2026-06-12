@@ -9,6 +9,11 @@
       "name": "crm.send_invoice",
       "required_params": ["invoice_id"],
       "effect": "effect.crm.send_invoice"
+    },
+    {
+      "name": "crm.void_invoice",
+      "required_params": ["invoice_id"],
+      "effect": "effect.crm.void_invoice"
     }
   ],
   "effects": [
@@ -19,7 +24,11 @@
       "causes": ["invoice.status == \"draft\"", "invoice.id.present"],
       "may_cause": ["email.notification_queued"],
       "reversibility": "compensable",
-      "risk": "medium"
+      "risk": "medium",
+      "compensation": {
+        "action": "crm.void_invoice",
+        "args_from_result": { "invoice_id": "invoice.id" }
+      }
     },
     {
       "id": "effect.crm.send_invoice",
@@ -29,6 +38,15 @@
       "may_cause": [],
       "reversibility": "compensable",
       "risk": "high"
+    },
+    {
+      "id": "effect.crm.void_invoice",
+      "action": "crm.void_invoice",
+      "preconditions": ["invoice_id.present"],
+      "causes": ["invoice.status == \"void\""],
+      "may_cause": [],
+      "reversibility": "irreversible",
+      "risk": "medium"
     }
   ],
   "policies": [

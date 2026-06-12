@@ -41,6 +41,10 @@ def _handle_call(params: dict[str, Any]) -> dict[str, Any]:
         invoice = _INVOICES.get(str(args.get("invoice_id")), {"id": args.get("invoice_id")})
         invoice["status"] = "sent"
         return _tool_result({"invoice": invoice})
+    if name == "crm.void_invoice":
+        invoice = _INVOICES.get(str(args.get("invoice_id")), {"id": args.get("invoice_id")})
+        invoice["status"] = "void"
+        return _tool_result({"invoice": invoice})
     return {
         "content": [{"type": "text", "text": f"unknown tool: {name}"}],
         "isError": True,
@@ -82,6 +86,16 @@ def main() -> None:
                     {
                         "name": "crm.send_invoice",
                         "description": "Send an invoice",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {"invoice_id": {"type": "string"}},
+                            "required": ["invoice_id"],
+                            "additionalProperties": False,
+                        },
+                    },
+                    {
+                        "name": "crm.void_invoice",
+                        "description": "Void an invoice (compensation)",
                         "inputSchema": {
                             "type": "object",
                             "properties": {"invoice_id": {"type": "string"}},
