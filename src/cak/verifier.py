@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
+from .cel import evaluate as cel_evaluate
 from .predicates import Truth, evaluate_all
 from .specs import GatewayConfig
 
@@ -121,11 +122,16 @@ def verify(config: GatewayConfig, proposal: Proposal) -> Decision:
     for policy in config.policies:
         if not policy.applies_to(proposal.action):
             continue
-        results = evaluate_all(list(policy.when), proposal.arguments)
-        # Empty `when` = unconditional (logical AND over the empty set):
-        # an action-scoped policy with no predicates always fires for its
-        # actions. Both cold drafters in exp-004 assumed this independently.
-        if all(truth is Truth.TRUE for truth in results.values()):
+        if policy.expr is not None:
+            # Ratified CEL surface (docs/11): one boolean expression.
+            condition_met = cel_evaluate(policy.expr, proposal.arguments)
+        else:
+            results = evaluate_all(list(policy.when), proposal.arguments)
+            # Empty `when` = unconditional (logical AND over the empty set):
+            # an action-scoped policy with no predicates always fires for its
+            # actions. Both cold drafters in exp-004 assumed this independently.
+            condition_met = all(truth is Truth.TRUE for truth in results.values())
+        if condition_met:
             fired.append(policy.id)
             reasons.append(f"policy '{policy.id}' fired -> {policy.enforcement}")
             if _SEVERITY[policy.enforcement] > _SEVERITY[enforcement]:

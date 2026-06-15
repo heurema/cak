@@ -10,6 +10,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from .cel import CELError
+from .cel import compile_expr as compile_cel
+
 RISK_LEVELS = ("low", "medium", "high", "critical")
 REVERSIBILITY = ("reversible", "compensable", "irreversible")
 ENFORCEMENTS = ("allow", "warn", "block", "require_approval", "sandbox_only", "quarantine")
@@ -62,6 +65,10 @@ class PolicySpec:
     # Optional action scope: empty = global; entries are exact action names
     # or "prefix.*" globs (same matching as capabilities).
     actions: tuple[str, ...] = ()
+    # CEL predicate (docs/11 verdict). When set, it is evaluated instead of
+    # the interim `when` list. Exactly one of `when` / `expr` carries the
+    # condition; an empty `when` with no `expr` fires unconditionally.
+    expr: str | None = None
 
     def applies_to(self, action: str) -> bool:
         if not self.actions:
@@ -154,14 +161,28 @@ def load_config(data: dict[str, Any]) -> GatewayConfig:
         enforcement = str(_require(raw, "enforcement", f"policy {policy_id}"))
         if enforcement not in ENFORCEMENTS:
             raise ConfigError(f"policy {policy_id}: unknown enforcement '{enforcement}'")
+        expr = raw.get("expr")
+        if expr is not None:
+            if "when" in raw:
+                raise ConfigError(
+                    f"policy {policy_id}: set either 'expr' (CEL) or 'when' (interim), "
+                    "not both"
+                )
+            if not isinstance(expr, str):
+                raise ConfigError(f"policy {policy_id}: 'expr' must be a string")
+            try:
+                compile_cel(expr)
+            except CELError as error:
+                raise ConfigError(f"policy {policy_id}: {error}") from error
         policies.append(
             PolicySpec(
                 id=policy_id,
                 name=str(raw.get("name", policy_id)),
-                when=_str_tuple(_require(raw, "when", f"policy {policy_id}"), policy_id),
+                when=_str_tuple(raw.get("when"), policy_id),
                 enforcement=enforcement,
                 proof_level=raw.get("proof_level"),
                 actions=_str_tuple(raw.get("actions"), f"policy {policy_id}"),
+                expr=expr,
             )
         )
 
