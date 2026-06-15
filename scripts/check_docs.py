@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-from pathlib import Path
 import json
 import sys
+from pathlib import Path
 
 try:
     import yaml
@@ -76,13 +76,29 @@ for path in sorted((root / "schemas").glob("*.json")):
     schemas[path.name] = schema
 
 invoice = load_yaml(root / "examples/invoice_agent.cak.yaml")
-validate(schemas["effect_spec.schema.json"], invoice["effect"], "examples/invoice_agent.cak.yaml#effect")
-validate(schemas["skill_spec.schema.json"], invoice["skill"], "examples/invoice_agent.cak.yaml#skill")
-validate(schemas["policy_spec.schema.json"], invoice["policy"], "examples/invoice_agent.cak.yaml#policy")
+validate(
+    schemas["effect_spec.schema.json"],
+    invoice["effect"],
+    "examples/invoice_agent.cak.yaml#effect",
+)
+validate(
+    schemas["skill_spec.schema.json"],
+    invoice["skill"],
+    "examples/invoice_agent.cak.yaml#skill",
+)
+validate(
+    schemas["policy_spec.schema.json"],
+    invoice["policy"],
+    "examples/invoice_agent.cak.yaml#policy",
+)
 
 policy_pack = load_yaml(root / "examples/policy_pack.yaml")
 for index, policy in enumerate(policy_pack["policies"]):
-    validate(schemas["policy_spec.schema.json"], policy, f"examples/policy_pack.yaml#policies[{index}]")
+    validate(
+        schemas["policy_spec.schema.json"],
+        policy,
+        f"examples/policy_pack.yaml#policies[{index}]",
+    )
 
 task_capsule = load_yaml(root / "examples/task_capsule.yaml")
 validate(schemas["task_capsule.schema.json"], task_capsule, "examples/task_capsule.yaml")
