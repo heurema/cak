@@ -21,7 +21,7 @@ The core product intuition is:
 hallucination          = using Claim<Unverified> as Claim<Supported>
 premature finalization = calling FINAL with Answer<Draft>
 wrong entity focus     = using Entity<Ambiguous> as Entity<Resolved>
-unsafe tool use        = executing Action<ExternalSideEffect> without Approval<Fresh>
+unsafe tool use        = executing Action<ExternalSideEffect> without Approval<GrantedFresh>
 untested code          = submitting Code<Generated> where Code<Verified> is required
 ```
 
@@ -36,7 +36,7 @@ ActionProposal + EffectSpec + Capability + PolicySpec -> allow/block/approval
 Contract skills generalize this pattern from external tool effects to broader agent cognition and procedural memory:
 
 ```text
-TypedState + ProposedAction + ContractSkill -> allow | warn | block | repair | ask | quarantine
+TypedState + ProposedAction + ContractSpec -> allow | warn | block | repair | ask | quarantine
 ```
 
 This should not replace the v0.1 gateway. Instead, it should become the next semantic layer once CAK has working enforcement, trace, and replay.
@@ -66,7 +66,7 @@ Current repository fit:
 - `docs/04_cak_ir_core.md` already defines CAK IR as typed, immutable, versioned, replayable, auditable, and includes `SkillSpec`, `PolicySpec`, `EvidenceSpec`, `VerifierPlan`, `EvalSpec`, and `TaskCapsule` as node families.
 - `docs/05_agent_vm_runtime.md` already states the key runtime principle: `LLM proposes. Kernel verifies. Runtime commits.`
 - `docs/06_artifact_lifecycle.md` already defines a promotion lifecycle and a learning pipeline from raw trace to causal hypothesis to skill candidate to tests.
-- `schemas/skill_spec.schema.json` already has skill kinds for `option`, `intervention`, `workflow`, and `executable_program`, but it does not yet have `contract`.
+- `schemas/skill_spec.schema.json` already has skill kinds for `option`, `intervention`, `workflow`, and `executable_program`, but it does not have a contract surface.
 - `src/cak/verifier.py` already implements a pure pre-execution verifier that returns an explainable `Decision` over action, effect, risk, reversibility, capability, fired policies, reasons, and precondition unknowns.
 
 So the new design should be additive:
@@ -77,16 +77,82 @@ v0.2: contract checker and typed state model
 v0.3: contract-driven repair skills and learning compiler
 ```
 
+## Schema decision: use ContractSpec, not SkillSpec.kind=contract
+
+The examples in this document are **ContractSpec-shaped**, not valid instances of the current `SkillSpec` schema.
+
+This matters because the current `schemas/skill_spec.schema.json` is intentionally strict:
+
+```text
+additionalProperties: false
+required: id, name, version, trigger, preconditions, steps, postconditions, risk, status
+kind: option | intervention | workflow | executable_program
+```
+
+A contract needs different first-class fields:
+
+```text
+hook
+match
+applies_when
+requires
+violation
+repair
+verify
+severity
+priority
+telemetry
+```
+
+Therefore, the v0.2 implementation should not simply add `contract` to `SkillSpec.kind`. That would produce examples that look endorsed but fail schema validation, or it would force contract semantics into misleading `trigger/preconditions/steps/postconditions` slots.
+
+Recommended direction:
+
+```text
+Introduce ContractSpec as a sibling artifact.
+ContractSpec links to SkillSpec repair handlers.
+SkillSpec remains the executable/workflow behavior unit.
+PolicySpec remains the authorization/compliance rule unit.
+```
+
+Possible files:
+
+```text
+schemas/contract_spec.schema.json
+src/cak/types.py
+src/cak/contracts.py
+tests/test_contracts.py
+examples/v0_2/contract_specs.yaml
+```
+
+Relationship:
+
+```text
+ContractSpec:
+  detects illegal typed transitions
+  emits typed violations
+  names repair SkillSpecs
+  names VerifierPlans
+
+SkillSpec:
+  executes repair workflows, interventions, options, or programs
+
+PolicySpec:
+  enforces organizational authorization and compliance decisions
+```
+
+A future UI or registry may group contracts under a broader human-facing “skills” category, but the canonical CAK IR should keep `ContractSpec` separate unless a later schema design proves that merging is safe.
+
 ## Contract Skill vs existing primitives
 
-| Primitive | Current role | Contract-skill relationship |
+| Primitive | Current role | Contract relationship |
 |---|---|---|
-| `EffectSpec` | Describes external action preconditions, causes, risk, reversibility | Contract skills may require an action to have a known effect type before execution. |
-| `PolicySpec` | Machine-checkable enforcement rule | Contract skills can compile into policies for hard enforcement, but also carry repair handlers and verifier plans. |
-| `SkillSpec` | Reusable executable behavior with tests and scope | Contract skills are a new `SkillSpec.kind = contract` or a sibling `ContractSpec`. |
-| `VerifierPlan` | Required checks and proof level | Contract skills declare which verifier upgrades the state to the required type. |
-| `EvidenceSpec` | Proof-of-experience for learned artifacts | Contract skills must cite traces, counterexamples, tests, and replay outcomes before promotion. |
-| `ReplaySpec` / `EvalSpec` | Regression and semantic replay | Contract skills require positive and negative replay fixtures to avoid overblocking. |
+| `EffectSpec` | Describes external action preconditions, causes, risk, reversibility | Contracts may require a known `EffectSpec` before live execution. |
+| `PolicySpec` | Machine-checkable enforcement rule | Contracts can compile into policies for hard enforcement, but also carry repair handlers and verifier plans. |
+| `SkillSpec` | Reusable executable behavior with tests and scope | Contracts route violations to repair skills; they should not be encoded as ordinary SkillSpecs in v0.2. |
+| `VerifierPlan` | Required checks and proof level | Contracts declare which verifier upgrades the state to the required type. |
+| `EvidenceSpec` | Proof-of-experience for learned artifacts | Contracts must cite traces, counterexamples, tests, and replay outcomes before promotion. |
+| `ReplaySpec` / `EvalSpec` | Regression and semantic replay | Contracts require positive and negative replay fixtures to avoid overblocking. |
 
 ## Core concepts
 
@@ -195,6 +261,8 @@ Code<Generated> -> run_tests -> Code<Verified>
 Approval<Missing> -> ask_user -> Approval<GrantedFresh>
 ```
 
+Repair execution must go through the same gateway and policy checks as any other action. A repair skill must never bypass capability, policy, effect, or approval checks.
+
 ### 5. Verifier
 
 The verifier is what upgrades a type. The agent should not be allowed to self-assert the upgrade without evidence.
@@ -203,7 +271,7 @@ The verifier is what upgrades a type. The agent should not be allowed to self-as
 read_count > 0 does not automatically mean Answer<Verified>
 source_supports_claim(claim, doc) may produce Claim<Supported>
 all_claims_supported(answer) may produce Answer<Verified>
-approval_token.valid && approval_token.scope_matches(action) may produce Approval<GrantedFresh>
+approval_token.valid && approval_token.scope_matches_exact_call may produce Approval<GrantedFresh>
 ```
 
 ## Proposed runtime flow
@@ -214,7 +282,7 @@ approval_token.valid && approval_token.scope_matches(action) may produce Approva
 3. INFER_TYPES
 4. PROPOSE_ACTION
 5. CHECK_CONTRACTS
-6. If contract OK: continue to current v0.1 capability/effect/policy verifier
+6. If contracts OK: continue to current v0.1 capability/effect/policy verifier
 7. If contract violation:
    a. emit typed violation
    b. route to repair skill
@@ -230,27 +298,20 @@ approval_token.valid && approval_token.scope_matches(action) may produce Approva
 The important separation is:
 
 ```text
-LLM proposal         = what the model wants to do
-Contract checker     = whether that transition is legal in typed state
-Repair skill         = how to produce the missing guarantee
-Verifier             = whether repair actually produced it
+LLM proposal          = what the model wants to do
+Contract checker      = whether that transition is legal in typed state
+Repair skill          = how to produce the missing guarantee
+Verifier              = whether repair actually produced it
 v0.1 gateway verifier = whether the external tool call is authorized and effect-safe
 ```
 
-## Minimal surface format
-
-This could become either:
-
-1. `SkillSpec.kind = contract`, or
-2. a new first-class `ContractSpec` that links to `SkillSpec` repair handlers.
-
-Start with option 1 for continuity unless schema pressure forces a split.
+## Minimal ContractSpec surface format
 
 ```yaml
-id: skill.contract.final_requires_verified_answer
+id: contract.final_requires_verified_answer
 name: final_requires_verified_answer
 version: 0.1.0
-kind: contract
+kind: ContractSpec
 status: candidate
 
 hook: before_action
@@ -314,15 +375,23 @@ telemetry:
     - added_steps
 ```
 
-## Example: external side-effect contract for the v0.1 wedge
+## Example: external side-effect approval contract
 
 This is closer to the existing SaaS/ops tool-boundary implementation than factual QA.
 
+The key rule is exact approval scope, not action-class approval. In v0.1, approval is scoped to:
+
+```text
+identity + action + sha256(canonical arguments)
+```
+
+So a token approved for one recipient, amount, invoice, or payload must never authorize a different call with the same action name.
+
 ```yaml
-id: skill.contract.external_send_requires_fresh_approval
-name: external_send_requires_fresh_approval
+id: contract.external_send_requires_exact_fresh_approval
+name: external_send_requires_exact_fresh_approval
 version: 0.1.0
-kind: contract
+kind: ContractSpec
 status: candidate
 
 hook: before_action
@@ -333,10 +402,11 @@ match:
 
 requires:
   - approval.type == Approval<GrantedFresh>
-  - approval.scope.includes(action.name)
   - approval.identity == proposal.identity
+  - approval.action == proposal.action
+  - approval.args_hash == sha256(canonical(proposal.arguments))
   - approval.not_expired == true
-  - effect.reversibility in [compensable, reversible]
+  - approval.single_use == true
 
 violation:
   type: MissingApprovalError
@@ -348,18 +418,62 @@ repair:
 
 verify:
   target_type: Approval<GrantedFresh>
-  verifier_plan: verifier.approval_token_valid
+  verifier_plan: verifier.approval_token_exact_scope_valid
 ```
 
-Compiled to the current v0.1 runtime, this should look like a stricter and more typed version of `require_approval`.
+Compiled to the current v0.1 runtime, this should look like a stricter typed version of `require_approval`, preserving the current non-widening approval guarantee.
+
+## Example: irreversible-effect approval contract
+
+Irreversible effects are not impossible. They require stronger proof and explicit preview-backed approval.
+
+This contract should be separate from the exact-scope approval contract because reversibility is about proof level and preview semantics, not token scope.
+
+```yaml
+id: contract.irreversible_effect_requires_previewed_approval
+name: irreversible_effect_requires_previewed_approval
+version: 0.1.0
+kind: ContractSpec
+status: candidate
+
+hook: before_action
+severity: hard
+
+match:
+  effect.reversibility: irreversible
+  env: Env<live>
+
+requires:
+  - approval.type == Approval<GrantedFresh>
+  - approval.identity == proposal.identity
+  - approval.action == proposal.action
+  - approval.args_hash == sha256(canonical(proposal.arguments))
+  - approval.preview_hash == sha256(rendered_preview)
+  - approval.proof_level >= required_proof_level(effect.risk, effect.reversibility)
+  - approval.explicit == true
+
+violation:
+  type: IrreversibleApprovalRequiredError
+
+repair:
+  handlers:
+    - skill.request_previewed_approval
+  on_repair_failure: block
+
+verify:
+  target_type: Approval<GrantedFresh, PreviewBacked, ExactScope>
+  verifier_plan: verifier.previewed_approval_exact_scope_valid
+```
+
+This avoids a bad loop where `Approval<GrantedFresh>` is obtained but the action still fails because the contract also required `effect.reversibility in [compensable, reversible]`. Reversibility should influence the required proof level, preview, and policy tier; it should not silently make explicitly approved irreversible actions unexecutable.
 
 ## Example: entity resolution contract
 
 ```yaml
-id: skill.contract.entity_use_requires_resolved_entity
+id: contract.entity_use_requires_resolved_entity
 name: entity_use_requires_resolved_entity
 version: 0.1.0
-kind: contract
+kind: ContractSpec
 status: candidate
 
 hook: before_action
@@ -390,10 +504,10 @@ This catches failures where the model acts on the wrong customer, record, issue,
 ## Example: code verification contract
 
 ```yaml
-id: skill.contract.code_final_requires_tests
+id: contract.code_final_requires_tests
 name: code_final_requires_tests
 version: 0.1.0
-kind: contract
+kind: ContractSpec
 status: candidate
 
 hook: before_action
@@ -428,27 +542,27 @@ verify:
 
 Severity is `soft` because some contexts cannot execute tests. The contract should still produce a warning or force a walkthrough.
 
-## Hard, soft, and advisory contracts
+## Hard, soft, and audit contracts
 
 Contracts need severity levels to avoid a brittle agent.
 
 ```text
-hard     = cannot execute until satisfied; used for external side effects and high-risk factual claims
-soft     = can execute only with downgrade, warning, or explicit reason
-audit    = never blocks; emits telemetry and replay fixtures
+hard  = cannot execute until satisfied; used for external side effects and high-risk factual claims
+soft  = can execute only with downgrade, warning, or explicit reason
+audit = never blocks; emits telemetry and replay fixtures
 ```
 
 Suggested mapping:
 
 | Severity | Runtime behavior | Example |
 |---|---|---|
-| `hard` | block or repair before execution | Payment without approval |
+| `hard` | block or repair before execution | Payment without exact approval |
 | `soft` | repair if cheap, otherwise warn and trace | One-source factual answer |
 | `audit` | record only | Query was long but still acceptable |
 
 ## Interaction with PolicySpec
 
-Contract skills are not a replacement for policy-as-code.
+Contract specs are not a replacement for policy-as-code.
 
 Use `PolicySpec` when:
 
@@ -457,50 +571,21 @@ The rule is organizational authorization or compliance.
 Example: amount > 10000 requires approval.
 ```
 
-Use `ContractSkill` when:
+Use `ContractSpec` when:
 
 ```text
 The rule is a reusable agent-state transition invariant with repair semantics.
 Example: FINAL requires Answer<Verified>.
 Example: Entity<Ambiguous> cannot be used as Entity<Resolved>.
+Example: Approval token must match exact call scope before an external send.
 ```
 
-Some contract skills can compile down to policy checks for the v0.1 gateway:
+Some contracts can compile down to policy checks for the v0.1 gateway:
 
 ```text
-ContractSkill(hard, no repair) -> PolicySpec(enforcement=block)
-ContractSkill(hard, repair=request_approval) -> PolicySpec(enforcement=require_approval) + repair handler
-ContractSkill(soft) -> PolicySpec(enforcement=warn) + VerifierPlan
-```
-
-## Interaction with SkillSpec
-
-The current `SkillSpec` supports:
-
-```text
-option
-intervention
-workflow
-executable_program
-```
-
-Add one of:
-
-```text
-kind: contract
-```
-
-or create a new schema:
-
-```text
-ContractSpec links to SkillSpec repair handlers.
-```
-
-Recommendation:
-
-```text
-Short term: add `contract` to SkillSpec.kind.
-Medium term: split `ContractSpec` when contracts need their own checker, type env, violation schema, and compilation targets.
+ContractSpec(hard, no repair) -> PolicySpec(enforcement=block)
+ContractSpec(hard, repair=request_approval) -> PolicySpec(enforcement=require_approval) + repair handler
+ContractSpec(soft) -> PolicySpec(enforcement=warn) + VerifierPlan
 ```
 
 ## Implementation plan
@@ -516,11 +601,11 @@ Add a small typed-state and contract model without changing the gateway hot path
 Candidate files:
 
 ```text
-schemas/contract_skill.schema.json
+schemas/contract_spec.schema.json
 src/cak/types.py
 src/cak/contracts.py
 tests/test_contracts.py
-examples/v0_2/contract_skills.yaml
+examples/v0_2/contract_specs.yaml
 ```
 
 Minimal Python objects:
@@ -536,6 +621,17 @@ class TypeAtom:
 class TypedState:
     atoms: tuple[TypeAtom, ...]
     facts: dict[str, object]
+
+@dataclass(frozen=True, slots=True)
+class ContractSpec:
+    id: str
+    hook: str
+    severity: str
+    match: tuple[str, ...]
+    requires: tuple[str, ...]
+    violation_type: str
+    repair_handlers: tuple[str, ...]
+    verifier_plan: str | None
 
 @dataclass(frozen=True, slots=True)
 class ContractViolation:
@@ -559,7 +655,7 @@ Implement:
 def check_contracts(
     typed_state: TypedState,
     proposal: Proposal,
-    contracts: tuple[ContractSkillSpec, ...],
+    contracts: tuple[ContractSpec, ...],
 ) -> ContractDecision:
     ...
 ```
@@ -596,7 +692,8 @@ Repair execution must go through the same gateway. A repair skill should never b
 Add verifiers that can upgrade typed state:
 
 ```text
-verifier.approval_token_valid -> Approval<GrantedFresh>
+verifier.approval_token_exact_scope_valid -> Approval<GrantedFresh, ExactScope>
+verifier.previewed_approval_exact_scope_valid -> Approval<GrantedFresh, PreviewBacked, ExactScope>
 verifier.effect_postcondition_met -> Effect<PostconditionSatisfied>
 verifier.answer_supported -> Answer<Verified>
 verifier.entity_unique -> Entity<Resolved>
@@ -625,7 +722,7 @@ Admission should follow the same lifecycle as other learned artifacts:
 draft -> candidate -> shadow_tested -> verified -> approved -> active
 ```
 
-## First three contracts to prototype
+## First contracts to prototype
 
 ### 1. Unknown effect contract
 
@@ -641,27 +738,42 @@ requires EffectSpec<Known>
 otherwise UnknownEffectError -> block
 ```
 
-### 2. Fresh approval contract
+### 2. Exact fresh approval contract
 
 ```text
-External side effects require a scoped, fresh approval token unless policy explicitly auto-allows.
+External side effects require a scoped, fresh approval token that matches the exact call.
 ```
 
 Why second: this strengthens the approval-token work already present in v0.1.
 
 ```text
 Action<ExternalSend|Financial|Irreversible>
-requires Approval<GrantedFresh> or Policy<AutoAllow>
+requires Approval<GrantedFresh, ExactScope>
+where scope = identity + action + sha256(canonical arguments)
 otherwise MissingApprovalError -> request approval or block
 ```
 
-### 3. Compensation-prepared contract
+### 3. Irreversible preview contract
+
+```text
+Irreversible live effects require explicit preview-backed approval at the required proof level.
+```
+
+Why third: this preserves the existing governance model: irreversible does not mean impossible, it means stronger approval.
+
+```text
+Effect<Irreversible> + Env<Live>
+requires Approval<GrantedFresh, ExactScope, PreviewBacked>
+otherwise IrreversibleApprovalRequiredError -> request previewed approval or block
+```
+
+### 4. Compensation-prepared contract
 
 ```text
 Compensable actions must have a valid compensation plan before commit.
 ```
 
-Why third: this aligns with the compensation chain already in the demo.
+Why fourth: this aligns with the compensation chain already in the demo.
 
 ```text
 Effect<Compensable>
@@ -669,7 +781,7 @@ requires CompensationSpec<Executable>
 otherwise MissingCompensationError -> block or require approval
 ```
 
-These three avoid the harder epistemic QA problem while validating the contract architecture inside the v0.1 product wedge.
+These avoid the harder epistemic QA problem while validating the contract architecture inside the v0.1 product wedge.
 
 ## Later contracts
 
@@ -691,7 +803,7 @@ Each contract activation should emit:
 
 ```yaml
 contract_event:
-  contract_id: skill.contract.final_requires_verified_answer
+  contract_id: contract.final_requires_verified_answer
   proposal_id: proposal_123
   typed_state_hash: ts_abc
   decision: violation
@@ -721,7 +833,7 @@ replay_regression_count
 
 ## Promotion criteria
 
-A contract skill should not become active just because it sounds reasonable.
+A contract should not become active just because it sounds reasonable.
 
 Promotion requires:
 
@@ -771,7 +883,11 @@ Generated contracts can be too narrow, too broad, redundant, or harmful. Mitigat
 
 ### Policy confusion
 
-Some rules belong in `PolicySpec`, not `ContractSkill`. Mitigation: use `PolicySpec` for authorization/compliance and `ContractSkill` for typed agent-state invariants with repair semantics.
+Some rules belong in `PolicySpec`, not `ContractSpec`. Mitigation: use `PolicySpec` for authorization/compliance and `ContractSpec` for typed agent-state invariants with repair semantics.
+
+### Approval widening
+
+Contracts must preserve exact-call approval scope. Approval for one recipient, amount, invoice, or payload must not authorize another call with the same action name.
 
 ## Proposed decision
 
@@ -781,15 +897,16 @@ Concrete next move:
 
 ```text
 1. Keep v0.1 verifier unchanged.
-2. Add schema/design experiments for ContractSkill.
-3. Prototype the first contract around UnknownEffectError or MissingApprovalError.
-4. Only then explore epistemic contracts such as Answer<Verified>.
+2. Add schema/design experiments for ContractSpec as a sibling of SkillSpec.
+3. Prototype UnknownEffectError and exact-scope MissingApprovalError.
+4. Add irreversible preview/proof-level handling as a separate contract.
+5. Only then explore epistemic contracts such as Answer<Verified>.
 ```
 
 ## Short implementation summary
 
 ```text
-Contract Skill = typed invariant + violation + repair handlers + verifier + replay tests.
+ContractSpec = typed invariant + violation + repair handlers + verifier + replay tests.
 
 The checker does not ask “which memory is semantically similar?”
 It asks “is this proposed transition legal in the current typed state?”
