@@ -17,12 +17,14 @@ from __future__ import annotations
 
 from typing import Any
 
+_CELPY: Any | None
 try:
     import celpy as _celpy_module
 except ImportError:  # pragma: no cover - exercised by environment, not tests
-    _celpy_module = None
+    _CELPY = None
+else:
+    _CELPY = _celpy_module
 
-_CELPY: Any | None = _celpy_module
 CEL_AVAILABLE = _CELPY is not None
 
 
