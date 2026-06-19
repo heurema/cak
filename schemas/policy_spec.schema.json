@@ -6,7 +6,6 @@
   "required": [
     "id",
     "name",
-    "when",
     "enforcement"
   ],
   "properties": {
@@ -18,6 +17,10 @@
     },
     "when": {
       "$ref": "#/$defs/predicate_list"
+    },
+    "expr": {
+      "type": "string",
+      "minLength": 1
     },
     "requires": {
       "$ref": "#/$defs/predicate_list"

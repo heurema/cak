@@ -92,8 +92,14 @@ token (`python3 -m cak.approve`, see docs/18), `block` as a typed replayable
 denial, a verified compensation chain on compensable effects
 (`compensation_prepared` → `compensation_executed`, see docs/19), and replay
 over the recorded trace with decision and postcondition checkpoints.
-Predicates are an interim restricted surface until the policy language
-decision in `docs/11`.
+
+Policy predicates use **CEL** (ratified in docs/11, see docs/20):
+`PolicySpec.expr` is a CEL boolean over `args`, expressing cross-field,
+membership, and absence checks the interim surface cannot —
+`examples/v0_1/cel_policies_example.json`. CAK keeps the policy envelope
+(action scope, enforcement tiers, strictest-wins); CEL only answers whether a
+single policy's condition holds. `cel-python` is required only for configs
+that use `expr`; the interim `when` list still runs without it.
 
 To put the gateway in front of any MCP server for a real agent (for example
 Claude Code), point the client at the proxy command — see

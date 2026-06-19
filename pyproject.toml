@@ -4,6 +4,10 @@ version = "0.1.0"
 description = "CAK v0.1 — typed tool-boundary governance gateway (MCP proxy form factor)"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
+# CEL is the ratified PolicySpec predicate language (docs/11, 2026-06-15).
+# Optional at runtime: configs using only the interim `when` list run without
+# it; configs declaring `expr` require it and fail clearly at load if absent.
+dependencies = ["cel-python>=0.4"]
 
 [build-system]
 requires = ["setuptools>=69"]
@@ -24,6 +28,10 @@ python_version = "3.12"
 mypy_path = "src"
 strict = true
 warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = "celpy.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

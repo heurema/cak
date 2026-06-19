@@ -1,0 +1,44 @@
+{
+  "actions": [
+    { "name": "billing.refund_order", "required_params": ["order_id", "amount"], "effect": "effect.billing.refund_order" },
+    { "name": "deploy.promote_release", "required_params": ["release_id", "environment"] }
+  ],
+  "effects": [
+    {
+      "id": "effect.billing.refund_order",
+      "action": "billing.refund_order",
+      "preconditions": ["amount > 0"],
+      "causes": ["order.status == \"refunded\""],
+      "may_cause": [],
+      "reversibility": "irreversible",
+      "risk": "high"
+    }
+  ],
+  "policies": [
+    {
+      "id": "policy.refund_above_200_requires_approval",
+      "name": "refund_above_200_requires_approval",
+      "actions": ["billing.refund_order"],
+      "enforcement": "require_approval",
+      "expr": "args.amount > 200",
+      "proof_level": "L2"
+    },
+    {
+      "id": "policy.refund_exceeds_order_total",
+      "name": "refund_exceeds_order_total",
+      "actions": ["billing.refund_order"],
+      "enforcement": "block",
+      "expr": "args.amount > args.order_total"
+    },
+    {
+      "id": "policy.unknown_environment_blocked",
+      "name": "unknown_environment_blocked",
+      "actions": ["deploy.promote_release"],
+      "enforcement": "block",
+      "expr": "!(args.environment in ['staging', 'qa', 'production'])"
+    }
+  ],
+  "capabilities": {
+    "ops-agent": ["billing.*", "deploy.*"]
+  }
+}
