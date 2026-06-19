@@ -23,6 +23,7 @@
         "ActionSpec",
         "EffectSpec",
         "SkillSpec",
+        "ContractSpec",
         "MemoryRecord",
         "PolicySpec",
         "TransactionSpec",

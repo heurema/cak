@@ -1,0 +1,74 @@
+contracts:
+  - id: contract.live_write_requires_effect_spec
+    name: live_write_requires_effect_spec
+    version: 0.1.0
+    kind: ContractSpec
+    hook: before_action
+    priority: 0.90
+    severity: hard
+    match:
+      - env == "live"
+      - action.kind == "write"
+    requires:
+      - effect.known == true
+    violation:
+      type: UnknownEffectError
+      message: Live write actions must declare a known EffectSpec before execution.
+    repair:
+      handlers: []
+      on_repair_failure: block
+    verify:
+      target_type: Effect<Known>
+      verifier_plan: verifier.effect_spec_known
+    status: candidate
+
+  - id: contract.external_send_requires_exact_fresh_approval
+    name: external_send_requires_exact_fresh_approval
+    version: 0.1.0
+    kind: ContractSpec
+    hook: before_action
+    priority: 0.95
+    severity: hard
+    match:
+      - action.kind == "external_send"
+    requires:
+      - approval.granted == true
+      - approval.exact_scope == true
+      - approval.not_expired == true
+      - approval.single_use == true
+    violation:
+      type: MissingApprovalError
+      message: External sends require a fresh, single-use approval scoped to the exact call.
+    repair:
+      handlers:
+        - skill.request_scoped_approval
+      max_attempts: 1
+      on_repair_failure: block
+    verify:
+      target_type: Approval<GrantedFresh,ExactScope>
+      verifier_plan: verifier.approval_token_exact_scope_valid
+    status: candidate
+
+  - id: contract.compensable_effect_requires_compensation_plan
+    name: compensable_effect_requires_compensation_plan
+    version: 0.1.0
+    kind: ContractSpec
+    hook: before_commit
+    priority: 0.80
+    severity: hard
+    match:
+      - effect.reversibility == "compensable"
+      - decision.enforcement == "allow"
+    requires:
+      - compensation.prepared == true
+      - compensation.args_derivable == true
+    violation:
+      type: MissingCompensationError
+      message: Auto-allowed compensable effects require an executable compensation plan.
+    repair:
+      handlers: []
+      on_repair_failure: require_approval
+    verify:
+      target_type: Compensation<Prepared>
+      verifier_plan: verifier.compensation_plan_executable
+    status: candidate

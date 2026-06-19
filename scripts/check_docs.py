@@ -27,15 +27,19 @@ required = [
     "docs/14_grounding_enforcement_replay.md",
     "docs/15_authoring_economics.md",
     "docs/16_cak_failure_modes.md",
+    "docs/20_v0_1_cel_policies.md",
+    "docs/21_contract_type_system_skills.md",
     "schemas/cak_ir.schema.json",
     "schemas/task_capsule.schema.json",
     "schemas/effect_spec.schema.json",
     "schemas/skill_spec.schema.json",
     "schemas/policy_spec.schema.json",
+    "schemas/contract_spec.schema.json",
     "examples/invoice_agent.cak.yaml",
     "examples/policy_pack.yaml",
     "examples/provider_profile.yaml",
     "examples/task_capsule.yaml",
+    "examples/v0_2/contract_specs.yaml",
 ]
 
 
@@ -102,6 +106,14 @@ for index, policy in enumerate(policy_pack["policies"]):
 
 task_capsule = load_yaml(root / "examples/task_capsule.yaml")
 validate(schemas["task_capsule.schema.json"], task_capsule, "examples/task_capsule.yaml")
+
+contract_pack = load_yaml(root / "examples/v0_2/contract_specs.yaml")
+for index, contract in enumerate(contract_pack["contracts"]):
+    validate(
+        schemas["contract_spec.schema.json"],
+        contract,
+        f"examples/v0_2/contract_specs.yaml#contracts[{index}]",
+    )
 
 # Parse-only until ProviderProfile gets its own schema.
 load_yaml(root / "examples/provider_profile.yaml")
