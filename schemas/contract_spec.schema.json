@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ContractSpec",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "version",
+    "kind",
+    "hook",
+    "severity",
+    "match",
+    "requires",
+    "violation",
+    "status"
+  ],
+  "properties": {
+    "id": { "$ref": "#/$defs/id" },
+    "name": { "$ref": "#/$defs/id" },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "kind": {
+      "const": "ContractSpec"
+    },
+    "hook": {
+      "type": "string",
+      "enum": ["before_action", "after_action", "before_commit", "after_observation"]
+    },
+    "priority": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["hard", "soft", "audit"]
+    },
+    "match": { "$ref": "#/$defs/predicate_list" },
+    "requires": { "$ref": "#/$defs/predicate_list" },
+    "violation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "$ref": "#/$defs/id" },
+        "message": { "type": "string" }
+      }
+    },
+    "repair": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "handlers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "on_repair_failure": {
+          "type": "string",
+          "enum": ["block", "warn", "ask", "require_approval", "audit"]
+        }
+      }
+    },
+    "verify": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target_type": { "type": "string", "minLength": 1 },
+        "verifier_plan": { "$ref": "#/$defs/id" }
+      }
+    },
+    "tests": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "positive": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "negative": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/id" }
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "telemetry": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "candidate",
+        "shadow_tested",
+        "verified",
+        "approved",
+        "active",
+        "deprecated",
+        "quarantined",
+        "archived"
+      ]
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$"
+    },
+    "predicate_list": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}
