@@ -145,6 +145,9 @@ def load_contracts(data: list[dict[str, Any]]) -> tuple[ContractSpec, ...]:
     contracts: list[ContractSpec] = []
     for raw in data:
         contract_id = str(_require(raw, "id", "contract"))
+        kind = str(_require(raw, "kind", f"contract {contract_id}"))
+        if kind != "ContractSpec":
+            raise ConfigError(f"contract {contract_id}: unsupported kind '{kind}'")
         severity = str(_require(raw, "severity", f"contract {contract_id}"))
         if severity not in CONTRACT_SEVERITIES:
             raise ConfigError(f"contract {contract_id}: unknown severity '{severity}'")
@@ -152,7 +155,7 @@ def load_contracts(data: list[dict[str, Any]]) -> tuple[ContractSpec, ...]:
         if status not in CONTRACT_STATUSES:
             raise ConfigError(f"contract {contract_id}: unknown status '{status}'")
         priority = raw.get("priority")
-        if priority is not None and not isinstance(priority, int | float):
+        if priority is not None and not isinstance(priority, (int, float)):
             raise ConfigError(f"contract {contract_id}: priority must be numeric")
         contracts.append(
             ContractSpec(
