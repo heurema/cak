@@ -93,7 +93,8 @@ denial, a verified compensation chain on compensable effects
 (`compensation_prepared` → `compensation_executed`, see docs/19), and replay
 over the recorded trace with decision and postcondition checkpoints.
 
-Policy predicates use **CEL** (ratified in docs/11, see docs/20):
+Policy predicates use **CEL** (ratified in docs/11; see
+[CEL Policy Predicates](docs/20_v0_1_cel_policies.md)):
 `PolicySpec.expr` is a CEL boolean over `args`, expressing cross-field,
 membership, and absence checks the interim surface cannot —
 `examples/v0_1/cel_policies_example.json`. CAK keeps the policy envelope
@@ -134,4 +135,4 @@ Start with:
 
 Design notes beyond v0.1:
 
-- [Contract Type-System Skills](docs/20_contract_type_system_skills.md)
+- [Contract Type-System Skills](docs/21_contract_type_system_skills.md)

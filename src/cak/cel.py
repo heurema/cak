@@ -17,12 +17,15 @@ from __future__ import annotations
 
 from typing import Any
 
+_CELPY: Any | None
 try:
-    import celpy
-
-    CEL_AVAILABLE = True
+    import celpy as _celpy_module
 except ImportError:  # pragma: no cover - exercised by environment, not tests
-    CEL_AVAILABLE = False
+    _CELPY = None
+else:
+    _CELPY = _celpy_module
+
+CEL_AVAILABLE = _CELPY is not None
 
 
 class CELError(ValueError):
@@ -32,13 +35,18 @@ class CELError(ValueError):
 _PROGRAM_CACHE: dict[str, Any] = {}
 
 
-def compile_expr(expr: str) -> None:
-    """Validate a CEL expression at config-load time. Raises CELError."""
-    if not CEL_AVAILABLE:
+def _require_celpy() -> Any:
+    if _CELPY is None:
         raise CELError(
             "policy uses a CEL 'expr' but celpy is not installed "
             "(pip install cel-python)"
         )
+    return _CELPY
+
+
+def compile_expr(expr: str) -> None:
+    """Validate a CEL expression at config-load time. Raises CELError."""
+    celpy = _require_celpy()
     if expr in _PROGRAM_CACHE:
         return
     env = celpy.Environment()
@@ -51,6 +59,7 @@ def compile_expr(expr: str) -> None:
 
 def evaluate(expr: str, arguments: dict[str, Any]) -> bool:
     """Evaluate a CEL expression against call arguments. Unevaluable -> False."""
+    celpy = _require_celpy()
     if expr not in _PROGRAM_CACHE:
         compile_expr(expr)
     program = _PROGRAM_CACHE[expr]
