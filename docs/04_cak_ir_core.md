@@ -24,7 +24,8 @@ CAK IR must be:
 | `EnvSpec` | Environment semantics, entities, actions, hazards |
 | `ActionSpec` | Tool/API/UI/A2A action signature |
 | `EffectSpec` | Preconditions, effects, exceptions, confidence, evidence |
-| `SkillSpec` | Executable behavior contract |
+| `SkillSpec` | Reusable executable behavior with tests and scope |
+| `ContractSpec` | Typed transition invariant, violation, repair hooks, and verifier plan |
 | `MemoryRecord` | Scoped, evidence-backed learned memory |
 | `PolicySpec` | Runtime enforcement rule |
 | `TransactionSpec` | Saga/checkpoint/compensation model |
