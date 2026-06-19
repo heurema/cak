@@ -131,3 +131,7 @@ Start with:
 - [Grounding, Enforcement, and Replay](docs/14_grounding_enforcement_replay.md)
 - [Authoring Economics](docs/15_authoring_economics.md)
 - [CAK Failure Modes](docs/16_cak_failure_modes.md)
+
+Design notes beyond v0.1:
+
+- [Contract Type-System Skills](docs/20_contract_type_system_skills.md)
