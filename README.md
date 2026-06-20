@@ -136,3 +136,16 @@ Start with:
 Design notes beyond v0.1:
 
 - [Contract Type-System Skills](docs/21_contract_type_system_skills.md)
+
+## R&D mode
+
+CAK now tracks open research questions in [docs/rd/](docs/rd/). Major
+architecture changes should link to an RDR or an implementation spike. The
+current priority is agent-native skill/procedural-memory abstraction, including
+ContractSpec, active skills, verifiers, skill pollution, and possible future
+SkillPack protocol boundaries.
+
+Start with:
+
+- [CAK R&D](docs/rd/README.md)
+- [CAK R&D Question Map](docs/rd/01_research_questions.md)
