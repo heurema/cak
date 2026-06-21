@@ -16,6 +16,23 @@ are validated against concrete questions, alternatives, and kill criteria.
 Start here:
 
 - [R&D Charter](00_rd_charter.md)
+- [Research Run Protocol](research_run_protocol.md)
+- [Source Ledger template](source_ledger_template.yaml)
+- [Debate Protocol](debate_protocol.md)
+- [Research Quality Gate](research_quality_gate.md)
+- [Pattern References](pattern_references.md)
+- [Research Runs](runs/README.md)
 - [Research Decision Record template](rdr_template.md)
 - [Research Question Map](01_research_questions.md)
 - [Literature Anchors](02_literature_anchors.md)
+
+RDRs are downstream of research runs. A useful RDR compresses source discovery,
+evidence tracking, pattern extraction, adversarial review, debate, quality
+gates, unknowns, minimal experiment candidates, and kill criteria.
+
+Pattern references are idea sources, not dependencies. They can guide source
+discovery and pattern extraction, but they do not support claims until inspected
+and recorded in a source ledger.
+
+Research runs should search for stronger analogues beyond the seed list. The
+seed references are starting points, not a boundary around the research space.

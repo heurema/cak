@@ -1,0 +1,49 @@
+research_run_id: rdr_001_agent_native_skill
+status: draft
+question: ""
+owner: ""
+date_started: ""
+
+sources:
+  - id: src_001
+    title: ""
+    url: ""
+    type: paper | repo | docs | benchmark | blog | discussion | code | dataset | security | other
+    primary: true
+    inspected: false
+    inspected_by: ""
+    date_accessed: ""
+    relevance: ""
+    reliability: high | medium | low | unknown
+    claims:
+      - id: claim_001
+        claim: ""
+        supporting_passage: ""
+        location: ""
+        confidence: high | medium | low
+        limitations: ""
+    counterclaims: []
+    extracted_patterns:
+      - pattern_id: pattern_001
+        pattern: ""
+        what_to_copy: ""
+        what_not_to_copy: ""
+        agent_native_adaptation: ""
+        risk: ""
+    notes: ""
+
+claim_matrix:
+  - claim_id: claim_001
+    supported_by: [src_001]
+    challenged_by: []
+    confidence: low
+    used_in_rdr: false
+
+pattern_matrix:
+  - pattern_id: pattern_001
+    sources: [src_001]
+    informs_questions: []
+    adopted: false
+    reason: ""
+
+open_questions: []
