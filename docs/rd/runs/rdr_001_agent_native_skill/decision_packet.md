@@ -61,8 +61,9 @@ inspection only.
 - What is the minimal Evidence IR?
 - How much security/admission is necessary before runtime use?
 - Can ContractSpec, PFs, and StageGraph share one activation model?
-- Which proposed trace-corpus entries should be accepted?
-- What benchmark/failure traces should be run after the corpus is selected?
+- How should the accepted trace fixtures be written without creating a schema
+  decision?
+- What benchmark/failure traces should be run after fixtures are authored?
 
 ## Quality gate status
 
@@ -76,11 +77,11 @@ Using `docs/rd/research_quality_gate.md`, this run remains exploratory because:
 
 - structured debate has been run as a single-operator structured pass, and a
   lightweight two-role Skeptic/Evaluator review has been run, but no full
-  independent reviewer panel has accepted the trace corpus;
+  independent reviewer panel has reviewed the accepted fixture plan;
 - minimal experiment is described but not implemented;
 - counterevidence is incomplete;
-- `trace_corpus_plan.md` proposes a corpus, but no CAK trace corpus has been
-  accepted, written as fixtures, or run;
+- `trace_corpus_plan.md` now accepts a research-fixture plan, but the fixtures
+  have not been written as separate eval artifacts or run;
 - implementation repositories were inspected only at README level and were not
   run or reproduced;
 - top-six papers were inspected for targeted claims but not reproduced;
@@ -89,38 +90,52 @@ Using `docs/rd/research_quality_gate.md`, this run remains exploratory because:
 - direct package+tests counterexample evidence was not found or validated;
 - security/admission remains a research direction, not a complete design.
 
-## Draft PR readiness gate
+## Trace corpus plan sufficiency
 
-PR #10 can become ready for review as an exploratory research packet only after
-`trace_corpus_plan.md` is judged sufficient for experiment design. That means:
+Trace corpus plan sufficiency: pass.
+
+Experiment evidence sufficiency: fail.
+
+The pass is narrow: `trace_corpus_plan.md` now contains an accepted
+research-fixture plan with eight traces and the requested minimum fixture shape.
+It does not mean any experiment has run, and it does not make RDR-001
+decision-ready.
+
+The accepted trace set is:
+
+- T1: wrong-state package activation;
+- T2a: PF should fire on a labeled failure;
+- T2b: PF should not fire on a near-match control;
+- T2c: PF context injection vs action override;
+- T5a: ContractSpec false confidence from bad grounding;
+- T5b: evidence/provenance diagnosis after grounding failure;
+- T6: workflow brittleness with package + tests and compiled bridge arms;
+- T7: lifecycle governance vs flat quarantine counterexample.
+
+The sufficiency pass means:
 
 - package + tests is treated as a serious baseline;
-- every central hypothesis H1-H7 has at least one support path and one kill or
-  weakening path;
+- T2 has been split into fire, no-fire/overblock, and
+  context-injection-vs-override cases;
+- T5 has been split into false-confidence and evidence/provenance diagnosis
+  cases;
+- T6 includes package + tests and compiled bridge arms;
+- T7 includes a flat registry + quarantine + regression-test counterexample;
+- every accepted trace has the requested minimum fixture fields;
 - PF, ContractSpec, StageGraph, SkillGraph, and compiled-bridge traces have
-  concrete scoring oracles;
+  scoring oracles and kill/defer signals;
 - C10 remains marked as a hypothesis-level synthesis, not an architecture
   decision;
 - the packet still avoids runtime, schema, SkillPack, ContractSpec, and final
   RDR changes.
 
-Current readiness verdict: not ready.
+Remaining blockers before decision-ready status:
 
-The lightweight Skeptic/Evaluator review found that the trace plan is useful but
-insufficient:
-
-- T1-T8 are candidate scenarios, not accepted fixtures;
-- scoring is not operationalized enough for pass/fail decisions;
-- Experiment A and Experiment C do not yet have enough same-trace full-baseline
-  coverage;
-- T2 must be split into PF fire, no-fire/overblock, and
-  context-injection-vs-override cases;
-- T5 must be split into ContractSpec false-confidence and evidence/provenance
-  diagnosis cases;
-- T7 needs a flat registry + quarantine + regression-test counterexample before
-  SkillGraph/lifecycle evidence is balanced;
-- C10 / compiled bridge can only win if it beats package + tests + provenance +
-  deny-by-default on the same traces at acceptable evidence cost.
+- fixtures are not implemented as separate research/eval artifacts;
+- no same-trace comparison has been run;
+- no quantitative result exists for package + tests vs PF vs ContractSpec vs
+  StageGraph vs SkillGraph vs compiled bridge;
+- no human has chosen adopt, reject, defer, or prototype deeper.
 
 ## Minimal experiment candidates
 
@@ -151,6 +166,6 @@ Experiment C: same workflow encoded as:
 
 ## Recommended next step
 
-Select 5-8 traces from `trace_corpus_plan.md`, write them as plain research
-fixtures in a future docs/eval packet, and run same-trace comparisons before
+Write the eight accepted traces from `trace_corpus_plan.md` as plain research
+fixtures in a future docs/eval packet, then run same-trace comparisons before
 drafting final RDR-001. Do not write final RDR-001 yet.
