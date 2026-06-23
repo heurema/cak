@@ -7,8 +7,8 @@ This is not the final RDR and is not decision-ready. It uses
 hypothesis that agent-native skills may be compiled, governed bridges between
 Evidence / Provenance IR and Runtime / Control IR.
 
-The intended next step is evidence audit plus structured debate before drafting
-the final RDR.
+The intended next step is selecting a minimal trace corpus and running
+same-trace comparisons before drafting the final RDR.
 
 Artifacts:
 
@@ -19,4 +19,5 @@ Artifacts:
 - [hypothesis_matrix.md](hypothesis_matrix.md)
 - [adversarial_review.md](adversarial_review.md)
 - [debate.md](debate.md)
+- [trace_corpus_plan.md](trace_corpus_plan.md)
 - [decision_packet.md](decision_packet.md)

@@ -27,6 +27,10 @@ The current supported claims are exactly the claims listed in
 - C10: A compiled bridge between Evidence IR and Runtime IR may better explain
   the combined requirements than any single skill format.
 
+Important: C10 is a hypothesis-level synthesis, not a supported architectural
+decision. It is included to keep the main hypothesis testable, not to adopt the
+compiled-bridge model.
+
 The top-six paper anchors now have targeted full-paper inspection for the
 listed claims. Voyager, SkillWiki, SkillJuror, Skill-Inject, and
 prompt-injection agent-skills repositories have README-level implementation
@@ -57,7 +61,8 @@ inspection only.
 - What is the minimal Evidence IR?
 - How much security/admission is necessary before runtime use?
 - Can ContractSpec, PFs, and StageGraph share one activation model?
-- What benchmark/failure traces should be used?
+- Which proposed trace-corpus entries should be accepted?
+- What benchmark/failure traces should be run after the corpus is selected?
 
 ## Quality gate status
 
@@ -69,10 +74,12 @@ Decision-ready status: not decision-ready.
 
 Using `docs/rd/research_quality_gate.md`, this run remains exploratory because:
 
-- adversarial debate is planned but not run;
+- structured debate has been run only as a single-operator structured pass, not
+  as an independent multi-agent or reviewer panel;
 - minimal experiment is described but not implemented;
 - counterevidence is incomplete;
-- no CAK trace corpus exists for experiments A/B/C;
+- `trace_corpus_plan.md` proposes a corpus, but no CAK trace corpus has been
+  accepted, written as fixtures, or run;
 - implementation repositories were inspected only at README level and were not
   run or reproduced;
 - top-six papers were inspected for targeted claims but not reproduced;
@@ -110,5 +117,6 @@ Experiment C: same workflow encoded as:
 
 ## Recommended next step
 
-Run structured debate using the updated source ledger, then choose a minimal
-CAK trace corpus for experiments A/B/C. Do not write final RDR-001 yet.
+Select 5-8 traces from `trace_corpus_plan.md`, write them as plain research
+fixtures in a future docs/eval packet, and run same-trace comparisons before
+drafting final RDR-001. Do not write final RDR-001 yet.
