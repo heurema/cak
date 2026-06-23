@@ -1,0 +1,454 @@
+research_run_id: rdr_001_agent_native_skill
+status: exploratory
+question: "What is an agent-native skill?"
+owner: ""
+date_started: "2026-06-21"
+
+sources:
+  - id: src_voyager_arxiv
+    title: "Voyager: An Open-Ended Embodied Agent with Large Language Models"
+    url: "https://arxiv.org/abs/2305.16291"
+    type: paper
+    primary: true
+    inspected: true
+    inspected_by: local_research_pass
+    date_accessed: "2026-06-21"
+    relevance: "Core executable-skill-library anchor."
+    reliability: medium
+    claims:
+      - id: claim_voyager_001
+        claim: "Voyager represents skills as an ever-growing library of executable code and uses environment feedback, execution errors, and self-verification for program improvement."
+        supporting_passage: "Voyager consists of three key components: ... an ever-growing skill library of executable code for storing and retrieving complex behaviors, and ... an iterative prompting mechanism that incorporates environment feedback, execution errors, and self-verification for program improvement."
+        location: "arXiv API abstract for 2305.16291v2"
+        confidence: medium
+        limitations: "Only the abstract was inspected in this pass; Minecraft provides more stable feedback and APIs than many CAK target environments."
+      - id: claim_voyager_002
+        claim: "Voyager reports compositional reuse and transfer of its learned skill library to a new Minecraft world."
+        supporting_passage: "The skills developed by Voyager are temporally extended, interpretable, and compositional... Voyager is able to utilize the learned skill library in a new Minecraft world to solve novel tasks from scratch."
+        location: "arXiv API abstract for 2305.16291v2"
+        confidence: medium
+        limitations: "Transfer claim is within Minecraft-style environments; cross-tool or enterprise-agent transfer is not established here."
+    counterclaims:
+      - "The inspected passage does not establish security, admission, or lifecycle controls for untrusted skill packages."
+      - "Executable code skills may rely on stable environment feedback not available in open-ended tool governance."
+    extracted_patterns:
+      - pattern_id: pattern_executable_external_skill_library
+        pattern: "executable external skill library"
+        what_to_copy: "Treat reusable behavior as external, interpretable artifacts that can be retrieved and composed."
+        what_not_to_copy: "Do not assume Minecraft-style APIs and feedback transfer to arbitrary CAK tool environments."
+        agent_native_adaptation: "Require trace/replay evidence, permissions, verifier hooks, and environment-specific pre/postconditions before runtime admission."
+        risk: "Code-like skills can execute harmful actions or encode brittle assumptions."
+      - pattern_id: pattern_self_verification_before_admission
+        pattern: "self-verification before skill admission"
+        what_to_copy: "Admission should require some execution-grounded evidence."
+        what_not_to_copy: "Do not treat self-verification alone as sufficient for safety or correctness."
+        agent_native_adaptation: "Combine self-verification with external verifier checks, replay, and human/security review for active skills."
+        risk: "Self-verification can become self-confirmation."
+    notes: "Inspected through arXiv Atom API abstract, not full paper."
+
+  - id: src_awm_arxiv
+    title: "Agent Workflow Memory"
+    url: "https://arxiv.org/abs/2409.07429"
+    type: paper
+    primary: true
+    inspected: true
+    inspected_by: local_research_pass
+    date_accessed: "2026-06-21"
+    relevance: "Core workflow-memory anchor for skills as induced routines."
+    reliability: medium
+    claims:
+      - id: claim_awm_001
+        claim: "AWM induces reusable workflows from past examples or test-time queries and selectively provides workflows to guide later agent generations."
+        supporting_passage: "We introduce Agent Workflow Memory (AWM), a method for inducing commonly reused routines, i.e., workflows, and selectively providing workflows to the agent to guide subsequent generations."
+        location: "arXiv API abstract for 2409.07429v1"
+        confidence: medium
+        limitations: "Only abstract inspected; exact workflow representation and failure cases need full-paper review."
+      - id: claim_awm_002
+        claim: "AWM reports improved relative success rate on Mind2Web and WebArena and reduced steps for successful WebArena tasks."
+        supporting_passage: "AWM substantially improves the baseline results by 24.6% and 51.1% relative success rate on Mind2Web and WebArena while reducing the number of steps taken to solve WebArena tasks successfully."
+        location: "arXiv API abstract for 2409.07429v1"
+        confidence: medium
+        limitations: "Benchmark gains do not decide whether workflows should be passive memories, active interventions, or typed state machines."
+    counterclaims:
+      - "The inspected abstract does not itself support the stronger claim that workflow actions are brittle; HMT provides a separate limitation signal for flat memories."
+    extracted_patterns:
+      - pattern_id: pattern_workflow_induction_from_trajectories
+        pattern: "workflow induction from trajectories"
+        what_to_copy: "Mine repeated routines from successful or relevant trajectories."
+        what_not_to_copy: "Do not assume a linear routine is safe to apply in every similar semantic task."
+        agent_native_adaptation: "Bind workflow steps to observable state, preconditions, postconditions, and repair exits."
+        risk: "Retrieved workflows can be applied in the wrong state."
+    notes: "Inspected through arXiv Atom API abstract, not full paper."
+
+  - id: src_hasp_arxiv
+    title: "Harnessing LLM Agents with Skill Programs"
+    url: "https://arxiv.org/abs/2605.17734"
+    type: paper
+    primary: true
+    inspected: true
+    inspected_by: local_research_pass
+    date_accessed: "2026-06-21"
+    relevance: "Core active-skill / Program Function anchor."
+    reliability: medium
+    claims:
+      - id: claim_hasp_001
+        claim: "HASP argues that textual lessons are often advisory and upgrades skills into executable Program Functions that intervene in the agent loop."
+        supporting_passage: "Such lessons are often encoded as textual guidance that remains largely advisory, lacking explicit mechanisms for when and how to intervene in the agent loop... PFs act as executable guardrails that activate on failure-prone states and modify the next action or inject corrective context."
+        location: "arXiv API abstract for 2605.17734v1"
+        confidence: medium
+        limitations: "Only abstract inspected; exact PF interface, datasets, and failure analysis need full-paper review."
+      - id: claim_hasp_002
+        claim: "HASP positions skill evolution as controlled by validation and teacher review, and calls out stable skill library evolution as necessary."
+        supporting_passage: "HASP ... can be applied ... for self-improvement by evolving validated, teacher-reviewed PFs... our mechanism analysis reveals ... the requirement for stable skill library evolution."
+        location: "arXiv API abstract for 2605.17734v1"
+        confidence: medium
+        limitations: "The abstract does not provide enough detail to audit validation quality or teacher-review cost."
+    counterclaims:
+      - "Active Program Functions may overblock or override valid behavior if activation precision is poor."
+      - "HASP evidence may overfit to PF-shaped interventions; CAK still needs contract/type and passive-memory baselines."
+    extracted_patterns:
+      - pattern_id: pattern_program_function_intervention
+        pattern: "Program Function should_activate / intervene"
+        what_to_copy: "Separate activation decision from intervention action."
+        what_not_to_copy: "Do not assume every skill should be an active override."
+        agent_native_adaptation: "Model active skills as gated runtime-control objects with traceable activation, mode, correctness, and outcome records."
+        risk: "False positives can suppress valid agent behavior."
+      - pattern_id: pattern_context_injection_action_override
+        pattern: "context injection and action override"
+        what_to_copy: "Study both soft corrective context and hard action modification."
+        what_not_to_copy: "Do not allow active overrides without permission and audit semantics."
+        agent_native_adaptation: "Represent intervention mode as part of the skill's typed effect and risk."
+        risk: "Action override can become a hidden policy bypass."
+    notes: "Inspected through arXiv Atom API abstract, not full paper."
+
+  - id: src_vaso_arxiv
+    title: "VASO: Formally Verifiable Self-Evolving Skills for Physical AI Agents"
+    url: "https://arxiv.org/abs/2606.05395"
+    type: paper
+    primary: true
+    inspected: true
+    inspected_by: local_research_pass
+    date_accessed: "2026-06-21"
+    relevance: "Contract/type-system adjacent anchor for proof-carrying skill hypotheses."
+    reliability: medium
+    claims:
+      - id: claim_vaso_001
+        claim: "VASO argues that execution feedback, unit tests, reward, and LLM self-critique provide trace-level evidence but not temporal-safety guarantees under untested conditions."
+        supporting_passage: "Existing skill-evolution loops refine skills through execution feedback, unit tests, environment reward, or LLM self-critique, but these signals provide only trace-level evidence: they show that a skill worked on sampled executions, not that skill-induced plans satisfy temporal safety contracts under untested conditions."
+        location: "arXiv API abstract for 2606.05395v1"
+        confidence: medium
+        limitations: "Physical-agent formal verification assumptions may not transfer directly to general CAK tool environments."
+      - id: claim_vaso_002
+        claim: "VASO represents each skill as a semantic contract with a formal interface for model checking and a planner-facing interface for executable behavior generation."
+        supporting_passage: "In VASO, each skill is represented as a semantic contract with two coupled interfaces: a formal interface that aligns robot states, observations, and control commands with logical propositions for model checking, and a planner-facing interface that guides executable behavior generation."
+        location: "arXiv API abstract for 2606.05395v1"
+        confidence: medium
+        limitations: "Only abstract inspected; details of contract language and verifier assumptions remain unknown."
+      - id: claim_vaso_003
+        claim: "VASO uses model-checker filtering and verification counterexamples as feedback for reusable skill contracts while keeping model weights frozen."
+        supporting_passage: "A model checker first filters logically inconsistent skill contracts... When verification fails, VASO translates the counterexample trace into a textual gradient that updates the reusable skill contract while keeping foundation-model weights frozen."
+        location: "arXiv API abstract for 2606.05395v1"
+        confidence: medium
+        limitations: "The inspected passage supports the pattern, not a CAK adoption decision."
+    counterclaims:
+      - "Formal interfaces may require state observability and propositions that CAK cannot assume for all agent/tool loops."
+    extracted_patterns:
+      - pattern_id: pattern_semantic_skill_contracts
+        pattern: "semantic skill contracts"
+        what_to_copy: "Treat a skill as carrying explicit obligations and verifier-facing structure."
+        what_not_to_copy: "Do not assume all CAK skills can be formally model-checked."
+        agent_native_adaptation: "Use ContractSpec as one possible verifier-facing facet of a skill package, not the whole skill."
+        risk: "Over-formalization can hide missing runtime observability."
+      - pattern_id: pattern_counterexample_driven_revision
+        pattern: "counterexample-driven contract revision"
+        what_to_copy: "Use failing traces to revise external skill/contract artifacts."
+        what_not_to_copy: "Do not let failed traces rewrite active runtime artifacts without gates."
+        agent_native_adaptation: "Route counterexamples into quarantine, replay tests, and human/verifier review before admission."
+        risk: "Counterexamples can overfit revisions to narrow failures."
+    notes: "Inspected through arXiv Atom API abstract, not full paper."
+
+  - id: src_psn_arxiv
+    title: "Evolving Programmatic Skill Networks"
+    url: "https://arxiv.org/abs/2601.03509"
+    type: paper
+    primary: true
+    inspected: true
+    inspected_by: local_research_pass
+    date_accessed: "2026-06-21"
+    relevance: "Lifecycle and compositional network anchor."
+    reliability: medium
+    claims:
+      - id: claim_psn_001
+        claim: "PSN frames skills as executable symbolic programs in a compositional network that evolves through experience."
+        supporting_passage: "We introduce the Programmatic Skill Network (PSN), a framework in which skills are executable symbolic programs forming a compositional network that evolves through experience."
+        location: "arXiv API abstract for 2601.03509v1"
+        confidence: medium
+        limitations: "Only abstract inspected; code was only described as planned in the abstract."
+      - id: claim_psn_002
+        claim: "PSN includes structured fault localization, maturity-aware update gating, and rollback validation."
+        supporting_passage: "PSN defines three core mechanisms... REFLECT for structured fault localization over skill compositions, progressive optimization with maturity-aware update gating... and canonical structural refactoring under rollback validation."
+        location: "arXiv API abstract for 2601.03509v1"
+        confidence: medium
+        limitations: "Engineering feasibility and open-source availability are not confirmed by the inspected abstract."
+    counterclaims:
+      - "Symbolic skill networks may not capture ambiguous LLM state or heterogeneous tool semantics."
+    extracted_patterns:
+      - pattern_id: pattern_maturity_update_rollback
+        pattern: "maturity-aware update gating and rollback validation"
+        what_to_copy: "Track skill maturity and validate rollback after structural changes."
+        what_not_to_copy: "Do not treat an expanding library as automatically improving."
+        agent_native_adaptation: "Add lifecycle state, maturity, conflict checks, and rollback plans to active skill admission."
+        risk: "Lifecycle machinery can become bureaucracy if utility is not measured."
+    notes: "Inspected through arXiv Atom API abstract, not full paper."
+
+  - id: src_hmt_arxiv
+    title: "Enhancing Web Agents with a Hierarchical Memory Tree"
+    url: "https://arxiv.org/abs/2603.07024"
+    type: paper
+    primary: true
+    inspected: true
+    inspected_by: local_research_pass
+    date_accessed: "2026-06-21"
+    relevance: "State-conditioned retrieval and workflow-brittleness anchor."
+    reliability: medium
+    claims:
+      - id: claim_hmt_001
+        claim: "HMT identifies flat trajectory memory as a cause of workflow mismatch because it entangles high-level task logic with site-specific action details."
+        supporting_passage: "Current methods struggle to generalize across unseen websites... flat memory structures ... entangle high-level task logic with site-specific action details. This entanglement induces a workflow mismatch in new environments."
+        location: "arXiv API abstract for 2603.07024v1"
+        confidence: medium
+        limitations: "Only abstract inspected; exact comparison against AWM and other memories needs full-paper review."
+      - id: claim_hmt_002
+        claim: "HMT separates intent, stage, and action levels, and uses observable preconditions/postconditions plus stage-aware inference."
+        supporting_passage: "The Stage level defines reusable semantic subgoals characterized by observable pre-conditions and post-conditions... By explicitly validating pre-conditions, the Planner aligns the current state with the correct logical subgoal to prevent workflow mismatch."
+        location: "arXiv API abstract for 2603.07024v1"
+        confidence: medium
+        limitations: "Web-agent setting may not transfer directly to API/tool-governance tasks."
+    counterclaims:
+      - "Structured memory may still need environment-specific selectors and action grounding."
+    extracted_patterns:
+      - pattern_id: pattern_pre_post_memory
+        pattern: "precondition/postcondition memory"
+        what_to_copy: "Attach observable preconditions and postconditions to reusable stages."
+        what_not_to_copy: "Do not keep flat action traces as reusable skills without state checks."
+        agent_native_adaptation: "Represent skill activation as typed-state predicate plus verifier-observed postcondition."
+        risk: "Preconditions can be incomplete or unobservable."
+    notes: "Inspected through arXiv Atom API abstract, not full paper."
+
+  - id: src_anthropic_agent_skills_docs
+    title: "Agent Skills"
+    url: "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview.md"
+    type: docs
+    primary: true
+    inspected: true
+    inspected_by: local_research_pass
+    date_accessed: "2026-06-21"
+    relevance: "Portable skill package baseline and security baseline."
+    reliability: high
+    claims:
+      - id: claim_agent_skills_001
+        claim: "Agent Skills are modular packages of instructions, metadata, and optional resources used automatically when relevant."
+        supporting_passage: "Agent Skills are modular capabilities that extend Claude's functionality. Each Skill packages instructions, metadata, and optional resources (scripts, templates) that Claude uses automatically when relevant."
+        location: "Page opening paragraph"
+        confidence: high
+        limitations: "This is product documentation for one provider's skill format, not a general CAK protocol."
+      - id: claim_agent_skills_002
+        claim: "The documented format uses progressive disclosure: metadata always loaded, SKILL.md loaded when triggered, resources/code loaded as needed."
+        supporting_passage: "Skills can contain three types of content, each loaded at different times... Level 1: Metadata (always loaded)... Level 2: Instructions (loaded when triggered)... Level 3: Resources and code (loaded as needed)."
+        location: "How Skills work / Three types of Skill content"
+        confidence: high
+        limitations: "Progressive disclosure controls context cost but does not by itself solve runtime intervention or verifier admission."
+      - id: claim_agent_skills_003
+        claim: "The docs explicitly warn that malicious Skills can misuse tools, execute harmful code, or exfiltrate data, and should be treated like installing software."
+        supporting_passage: "A malicious Skill can direct Claude to invoke tools or execute code in ways that don't match the Skill's stated purpose... malicious Skills could lead to data exfiltration, unauthorized system access, or other security risks... Treat like installing software."
+        location: "Security considerations"
+        confidence: high
+        limitations: "The page gives security guidance but not a formal supply-chain model."
+      - id: claim_agent_skills_004
+        claim: "Skill runtime constraints differ across surfaces; the same package concept does not imply the same execution or network semantics everywhere."
+        supporting_passage: "Custom Skills do not sync across surfaces... The exact runtime environment available to your skill depends on the product surface... Claude API: No network access... Claude Code: Full network access."
+        location: "Limitations and constraints"
+        confidence: high
+        limitations: "Provider-specific constraints; useful as a warning against premature CAK protocol assumptions."
+    counterclaims:
+      - "Official package format supports portability across some surfaces but also documents cross-surface and runtime differences."
+    extracted_patterns:
+      - pattern_id: pattern_progressive_disclosure_package
+        pattern: "progressive-disclosure skill package"
+        what_to_copy: "Separate metadata, instructions, code, and reference resources by loading stage."
+        what_not_to_copy: "Do not mistake loading mechanics for activation correctness or runtime control."
+        agent_native_adaptation: "Compile package metadata into retrieval candidates, then require runtime/verifier admission for active effects."
+        risk: "Text instructions can still become prompt-injection and supply-chain surfaces."
+      - pattern_id: pattern_skill_supply_chain_analysis
+        pattern: "skill supply-chain analysis"
+        what_to_copy: "Treat skills as installable software with trust, audit, and sandbox concerns."
+        what_not_to_copy: "Do not rely on human trust in the author alone."
+        agent_native_adaptation: "Require provenance, permission declarations, quarantine, review, and rollback metadata before active use."
+        risk: "Malicious or stale skills can direct harmful tool use."
+    notes: "Inspected direct Markdown page and associated llms.txt index."
+
+  - id: lead_last30days_skill
+    title: "last30days-skill"
+    url: ""
+    type: other
+    primary: false
+    inspected: false
+    inspected_by: ""
+    date_accessed: ""
+    relevance: "Research-process pattern lead for horizon scanning."
+    reliability: unknown
+    claims: []
+    counterclaims: []
+    extracted_patterns: []
+    notes: "Seed reference only. Do not use as evidence until inspected."
+
+  - id: lead_nitpicker
+    title: "nitpicker"
+    url: ""
+    type: other
+    primary: false
+    inspected: false
+    inspected_by: ""
+    date_accessed: ""
+    relevance: "Research-process pattern lead for multi-review and actor/critic debate."
+    reliability: unknown
+    claims: []
+    counterclaims: []
+    extracted_patterns: []
+    notes: "Seed reference only. Do not use as evidence until inspected."
+
+  - id: lead_storm_like
+    title: "STORM-like systems"
+    url: ""
+    type: paper
+    primary: false
+    inspected: false
+    inspected_by: ""
+    date_accessed: ""
+    relevance: "Research-process pattern lead for multi-perspective retrieval-grounded synthesis."
+    reliability: unknown
+    claims: []
+    counterclaims: []
+    extracted_patterns: []
+    notes: "Seed reference only. Do not use as evidence until inspected."
+
+  - id: lead_autosurvey_like
+    title: "AutoSurvey-like systems"
+    url: ""
+    type: paper
+    primary: false
+    inspected: false
+    inspected_by: ""
+    date_accessed: ""
+    relevance: "Research-process pattern lead for source discovery, clustering, and quality evaluation."
+    reliability: unknown
+    claims: []
+    counterclaims: []
+    extracted_patterns: []
+    notes: "Seed reference only. Do not use as evidence until inspected."
+
+  - id: lead_surveyg_citation_graph
+    title: "SurveyG / citation-graph approaches"
+    url: ""
+    type: paper
+    primary: false
+    inspected: false
+    inspected_by: ""
+    date_accessed: ""
+    relevance: "Research-process pattern lead for hierarchical citation graph traversal."
+    reliability: unknown
+    claims: []
+    counterclaims: []
+    extracted_patterns: []
+    notes: "Seed reference only. Do not use as evidence until inspected."
+
+  - id: lead_strips_adl_htn
+    title: "STRIPS / ADL / HTN"
+    url: ""
+    type: paper
+    primary: true
+    inspected: false
+    inspected_by: ""
+    date_accessed: ""
+    relevance: "Older planning lead for preconditions, postconditions, and decomposition."
+    reliability: unknown
+    claims: []
+    counterclaims: []
+    extracted_patterns: []
+    notes: "Seed reference only. Do not use as evidence until inspected."
+
+  - id: lead_soar_production_systems
+    title: "Soar / production systems"
+    url: ""
+    type: paper
+    primary: true
+    inspected: false
+    inspected_by: ""
+    date_accessed: ""
+    relevance: "Older cognitive-architecture lead for procedural memory and rule activation."
+    reliability: unknown
+    claims: []
+    counterclaims: []
+    extracted_patterns: []
+    notes: "Seed reference only. Do not use as evidence until inspected."
+
+claim_matrix:
+  - claim_id: claim_voyager_001
+    supported_by: [src_voyager_arxiv]
+    challenged_by: [src_anthropic_agent_skills_docs]
+    confidence: medium
+    used_in_rdr: false
+  - claim_id: claim_voyager_002
+    supported_by: [src_voyager_arxiv]
+    challenged_by: [src_hmt_arxiv]
+    confidence: medium
+    used_in_rdr: false
+  - claim_id: claim_awm_001
+    supported_by: [src_awm_arxiv]
+    challenged_by: [src_hmt_arxiv]
+    confidence: medium
+    used_in_rdr: false
+  - claim_id: claim_hasp_001
+    supported_by: [src_hasp_arxiv]
+    challenged_by: [src_anthropic_agent_skills_docs]
+    confidence: medium
+    used_in_rdr: false
+  - claim_id: claim_vaso_001
+    supported_by: [src_vaso_arxiv]
+    challenged_by: [src_voyager_arxiv, src_awm_arxiv]
+    confidence: medium
+    used_in_rdr: false
+  - claim_id: claim_agent_skills_003
+    supported_by: [src_anthropic_agent_skills_docs]
+    challenged_by: []
+    confidence: high
+    used_in_rdr: false
+
+pattern_matrix:
+  - pattern_id: pattern_executable_external_skill_library
+    sources: [src_voyager_arxiv]
+    informs_questions: [RDR-001, RDR-004, RDR-008]
+    adopted: false
+    reason: "Relevant but not sufficient; requires security, activation, and verifier gates."
+  - pattern_id: pattern_program_function_intervention
+    sources: [src_hasp_arxiv]
+    informs_questions: [RDR-001, RDR-002, RDR-012]
+    adopted: false
+    reason: "Strong active-skill hypothesis; needs false-positive and overblocking experiments."
+  - pattern_id: pattern_semantic_skill_contracts
+    sources: [src_vaso_arxiv]
+    informs_questions: [RDR-001, RDR-003, RDR-011]
+    adopted: false
+    reason: "Strong ContractSpec-adjacent hypothesis; state-observability assumptions remain open."
+  - pattern_id: pattern_progressive_disclosure_package
+    sources: [src_anthropic_agent_skills_docs]
+    informs_questions: [RDR-001, RDR-009, RDR-015]
+    adopted: false
+    reason: "Useful package baseline; not equivalent to runtime control."
+
+open_questions:
+  - "Which sources provide negative evidence for active skills beyond security warnings?"
+  - "How much of HASP's PF interface transfers to CAK's gateway/tool-boundary runtime?"
+  - "Can ContractSpec express skill activation, or only skill obligations?"
+  - "What evidence is needed to compare semantic retrieval with typed-state routing?"
+  - "Which security analyses cover prompt injection and supply-chain attack paths for skill packages?"
