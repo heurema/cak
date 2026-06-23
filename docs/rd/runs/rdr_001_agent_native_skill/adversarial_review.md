@@ -1,134 +1,142 @@
-# RDR-001 Adversarial Review
+# Adversarial Review — RDR-001 Agent-Native Skill
 
-Status: first adversarial review
+Status: exploratory red-team review. This does not decide RDR-001.
 
-This review attacks the current research packet. It does not decide the RDR.
+## Assumption 1: Skill as compiled bridge is not overengineering
 
-## Attack: one universal skill format
+The compiled-bridge hypothesis may be too complex for CAK's current stage. It
+combines package structure, runtime hooks, verifier obligations, security
+review, provenance, lifecycle, and telemetry before CAK has proven that a
+simple package plus tests fails. A broad bridge artifact could become a schema
+graveyard: every source contributes a field, but no field is load-bearing.
 
-The packet still risks looking for one master abstraction. The inspected
-sources point in different directions:
+The most likely failure is that CAK designs a rich artifact without a minimal
+runtime experiment. If the first real use case only needs a small `SKILL.md`
+with one deterministic helper script and a few tests, the bridge model may slow
+learning rather than improve it.
 
-- Agent Skills: packaging and progressive disclosure.
-- Voyager/PSN: executable external artifacts.
-- AWM/HMT: workflow or structured memory.
-- HASP: active runtime intervention.
-- VASO: semantic contracts and verifier-facing obligations.
+## Assumption 2: CAK needs both Evidence IR and Runtime IR
 
-Those may be facets, not one object. A premature "SkillSpec" could flatten
-different mechanisms into one leaky schema.
+One IR might be enough. A package manifest could carry provenance, tests,
+permissions, and hooks. A ContractSpec could carry runtime and evidence fields.
+A Program Function record could include the trace that produced it. Splitting
+Evidence IR and Runtime IR may create extra translation and synchronization
+work.
 
-## Attack: overfitting to HASP / Program Functions
+The counterargument is that evidence and runtime control evolve at different
+rates. Still, this must be tested. If a single append-only skill manifest can
+support import, admission, replay, and activation cleanly, the dual-IR split is
+unnecessary.
 
-HASP is currently the strongest source for active runtime skills, but this run
-only inspected the abstract. It is not enough to adopt PFs as the CAK primitive.
-PF-style `should_activate` / `intervene` may work for some failure-prone states
-and fail badly when state observability is weak. Active interventions also need
-false-positive measurement, permission boundaries, and stop conditions.
+## Assumption 3: Agent Skills is insufficient
 
-## Attack: overfitting to Voyager / code skills
+Agent Skills-style packaging may be enough for v0.1/v0.2 interoperability.
+Progressive disclosure, `SKILL.md`, bundled scripts, resources, and security
+guidance already cover a large amount of practical behavior. SkillJuror and
+SkillReducer suggest that organization and routing quality can change runtime
+behavior without inventing a new compiled artifact model.
 
-Voyager makes executable code skills compelling, but Minecraft provides stable
-feedback loops and an environment API unlike many CAK target settings. Code
-skills do not automatically solve activation, authorization, supply-chain risk,
-or verifier admission. Treating "skill = code" would ignore passive guidance,
-contracts, and state-conditioned intervention.
+The strongest simple path is: adopt a package shell, add strict tests,
+provenance, and a deny-by-default execution policy, then defer Runtime IR until
+there are enough failures. This may be cheaper than designing bridge semantics
+upfront.
 
-## Attack: overfitting to AWM / workflows
+## Assumption 4: ContractSpec should become proof-carrying
 
-AWM supports workflow memory as a useful pattern, but HMT directly warns about
-flat memory causing workflow mismatch across unseen websites. Workflow skills
-without typed state, stage validation, and repair exits can become brittle
-macros. A workflow may be an ingredient, not the skill unit.
+This may overfit VASO and robotics. VASO has robot states, observations,
+control commands, and temporal specifications. CAK may operate over text,
+files, APIs, repository state, and human approvals where propositions are
+ambiguous or expensive to ground.
 
-## Attack: premature SkillPack/protocol extraction
+Proof-carrying ContractSpec could create false confidence if the proof is over
+the wrong abstraction. A contract that verifies a simplified state model may
+still permit harmful action in the real tool environment. ContractSpec should
+remain a candidate verifier facet until CAK has concrete traces where proof
+obligations add value.
 
-The packet has not shown two independent runtime adapters or conformance tests.
-Agent Skills documentation proves that a package format can be useful, but it
-also documents cross-surface differences in runtime and network semantics.
-Therefore a portable CAK SkillPack would be premature. At this stage, CAK should
-study package facets and runtime hooks without extracting a protocol.
+## Assumption 5: StageGraph is needed
 
-## Attack: package format does not solve runtime control
+Workflows plus retrieval may be enough. HMT's stage-aware memory targets web
+agents and unseen website generalization. CAK might not need a full StageGraph
+if its early workflows are short, API-shaped, or already guarded by tests.
 
-Packaging instructions, scripts, and resources is not the same as deciding:
+StageGraph also depends on observable preconditions/postconditions. If CAK
+cannot observe the state needed to validate a stage, StageGraph becomes a more
+formal-looking workflow with the same activation errors.
 
-- when a skill activates;
-- whether it can override actions;
-- which permissions it has;
-- how verifier evidence is checked;
-- how it is quarantined or retired;
-- how conflict with another skill is resolved.
+## Assumption 6: SkillGraph is needed
 
-Any RDR that says "skill = package" without runtime semantics would be weak.
+Maturity, rollback, provenance, dependencies, and conflicts can be deferred.
+For a small skill set, a flat allowlist plus quarantine may outperform a
+SkillGraph. A graph can become governance overhead before there is enough
+volume for graph structure to matter.
 
-## Attack: skill supply-chain risk is underdeveloped
+The strongest reason to add SkillGraph later is library pollution. But the
+first RDR should not assume that CAK will have uncontrolled self-evolving skill
+volume. The minimal experiment should compare flat quarantine to lifecycle
+graph mechanics before adopting graph language.
 
-The Anthropic Agent Skills docs explicitly warn that malicious Skills can cause
-tool misuse, code execution, and data exfiltration. This packet lacks broader
-independent security analyses of prompt injection, skill dependency hijacking,
-plugin marketplace trust, abandoned repositories, and approval widening. That
-gap blocks decision-ready status for any active or executable skill design.
+## Assumption 7: security/admission should be designed early
 
-## Attack: model-generated source claims
+Early security design can slow exploration, especially if every candidate skill
+needs sandboxing, scanner output, provenance review, and replay before it can
+be tested. For local prototypes, it may be faster to run skills manually in a
+trusted checkout and record failures.
 
-The current claim matrix is mostly grounded in inspected abstracts and one
-official docs page. That is acceptable for exploratory status, but not for a
-decision. Abstracts are author claims, not full evidence. The next pass must
-inspect full papers, implementations, benchmarks, and limitations. Seed refs
-such as last30days-skill, nitpicker, STORM-like systems, AutoSurvey-like
-systems, SurveyG, STRIPS/ADL/HTN, and Soar remain leads only.
+The opposing risk is that skills mix instructions, code, resources, and tool
+authority. SkillInject, SkillJect, MalSkillBench, repository-context analyses,
+and the Agent Skills docs make it hard to justify importing untrusted active or
+executable skills without at least a minimal admission boundary. The open
+question is how small that boundary can be.
 
-## Attack: research-run bureaucracy
+## Strongest objections
 
-The packet has many artifacts. That can become process theater if the artifacts
-do not reject weak claims. The quality gate must be used to say "not ready" and
-to narrow the next experiment. If the packet just gives a RDR author more prose,
-it fails.
+- The compiled bridge may be a post-hoc synthesis that explains everything and
+  predicts too little.
+- A package shell plus tests, provenance, and deny-by-default execution may be
+  enough for the next CAK milestone.
+- Program Functions, ContractSpec, StageGraph, and SkillGraph may be separate
+  tools, not facets of one object.
+- Security evidence argues for caution, but not necessarily for a complex
+  compiled artifact.
 
 ## Missing evidence
 
-- Full-paper inspection for HASP, AWM, Voyager, VASO, PSN, and HMT.
-- Implementation repos and runnable artifacts, especially for Voyager, HASP,
-  PSN, and HMT.
-- Independent security analyses of skills as prompt-injection and supply-chain
-  surfaces.
-- Negative results for active skills, workflow memory, executable skills, and
-  contract-heavy skill definitions.
-- Older planning/cognitive-architecture sources: STRIPS/ADL/HTN and Soar are
-  not inspected.
-- Research-process systems: last30days-skill, nitpicker, STORM-like,
-  AutoSurvey-like, and SurveyG are not inspected.
+- Full-paper inspection for HASP, AWM, Voyager, VASO, PSN, HMT, SkillWiki,
+  SkillRevise, SkillJuror, SkillReducer, and the security papers.
+- Implementation repo inspection for Voyager, SkillWiki, SkillJuror, and any
+  available skill-security datasets.
+- Negative results where package+tests beats richer runtime intervention.
+- Concrete CAK failure traces that require active intervention or typed
+  pre/postconditions.
+- Older planning/cognitive architecture evidence: STRIPS, ADL, HTN, Soar, and
+  production systems.
 
 ## Missing counterexamples
 
-- A text-only skill that beats active intervention because runtime state is too
-  ambiguous.
-- An executable skill that passes tests but performs harmful external action.
-- A workflow memory that activates on a semantically similar but invalid state.
-- A ContractSpec that is correct but too expensive or too narrow to author.
-- Two active skills that conflict and each looks locally valid.
-- A skill package whose metadata is safe but referenced resources are malicious.
+- A text-only skill that outperforms active intervention because runtime state
+  is ambiguous.
+- A package + tests workflow that is sufficient and cheaper than compiled IR.
+- A ContractSpec that proves the wrong thing because grounding is incomplete.
+- A StageGraph that cannot observe its own preconditions.
+- A SkillGraph that adds review work without reducing library pollution.
+- A security gate that blocks useful experimentation more than it reduces risk.
 
-## Questions for debate
+## What would make RDR-001 decision-ready
 
-- Should RDR-001 define one skill abstraction or a taxonomy of skill facets?
-- Is active intervention the core of an agent-native skill, or just one mode?
-- Is ContractSpec a skill facet, a sibling artifact, or a verifier obligation?
-- What is the minimal runtime hook set needed to test H2 without building a
-  SkillPack?
-- What security gate is mandatory before executable or active skills can run?
-- Which hypothesis can be killed fastest with a small experiment?
+- Full source audit with claims tied to `source_ledger.yaml`.
+- A structured debate whose outputs update the matrices.
+- At least one concrete minimal experiment comparing the same traces across
+  package, code, PF, ContractSpec, StageGraph, SkillGraph, and compiled bridge.
+- At least one inspected counterexample or negative result.
+- Clear kill criteria for every hypothesis.
+- Explicit separation between adopted claims and promising unsupported claims.
 
-## What would make RDR-001 decision-ready?
+## What would kill the compiled-bridge hypothesis
 
-- Full-paper and implementation inspection for the primary sources.
-- At least one independent security analysis in the ledger.
-- At least one negative result or counterexample source.
-- A completed debate with Scout, Archivist, Builder, Skeptic, Alienist,
-  Security reviewer, Evaluator, and Judge.
-- A minimal experiment that compares at least text-only, workflow, executable,
-  Program Function, ContractSpec, and hybrid skill forms on the same traces.
-- Explicit kill criteria for each hypothesis.
-- A decision packet that names which claims are unsupported and refuses to make
-  architecture decisions from seed references.
+- Package + tests + provenance performs as well as the bridge on the same
+  traces with materially lower complexity.
+- Runtime intervention cannot achieve acceptable activation precision.
+- Evidence links do not improve debugging, admission, or rollback decisions.
+- Verifier obligations are too weak or too expensive for the target traces.
+- Security/admission can be handled by a simpler allowlist/quarantine model.

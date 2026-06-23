@@ -1,149 +1,102 @@
-# RDR-001 Decision Packet
+# Decision Packet — RDR-001 Agent-Native Skill
 
 Status: exploratory / not decision-ready
 
-Research question:
-What is a skill for an AI agent: text advice, workflow, executable code,
-Program Function, ContractSpec, verifier, type transition, causal intervention,
-or a hybrid package?
-
 ## Current supported claims
 
-- Agent Skills package instructions, metadata, and optional resources and use
-  them automatically when relevant (`src_anthropic_agent_skills_docs`).
-- Progressive disclosure is a concrete packaging/loading pattern: metadata at
-  startup, SKILL.md when triggered, resources/code as needed
-  (`src_anthropic_agent_skills_docs`).
-- Skill packages are a security and supply-chain surface; malicious skills can
-  direct tool misuse, code execution, or data exfiltration
-  (`src_anthropic_agent_skills_docs`).
-- Voyager supports the hypothesis that executable external skill libraries can
-  be reusable and compositional in stable environment-feedback settings
-  (`src_voyager_arxiv`).
-- AWM supports the hypothesis that workflow memories induced from trajectories
-  can improve web-agent task performance (`src_awm_arxiv`).
-- HMT challenges flat workflow memory by identifying workflow mismatch from
-  entangled task logic and site-specific action details (`src_hmt_arxiv`).
-- HASP supports the hypothesis that active Program Functions can provide
-  runtime-control semantics beyond passive textual advice (`src_hasp_arxiv`).
-- VASO supports the hypothesis that semantic contracts and verifier feedback
-  can make some skill evolution proof-oriented rather than trace-only
-  (`src_vaso_arxiv`).
-- PSN supports the hypothesis that evolving skill libraries may need maturity
-  gating, compositional structure, and rollback validation (`src_psn_arxiv`).
+The current supported claims are exactly the claims listed in
+`claim_matrix.md`:
+
+- C1: Executable Program Functions provide stronger runtime control than
+  prompt-only textual skills in HASP’s evaluated framing.
+- C2: Workflow memories can improve web agents, but linear workflows/action
+  macros can be brittle or bias behavior in dynamic environments.
+- C3: Executable code skills with self-verification can compose and transfer in
+  stable API environments.
+- C4: Portable skill packaging is not the same as runtime control or
+  verifier-gated admission.
+- C5: Formal/semantic contracts become stronger when paired with
+  verifier-facing obligations and counterexample traces.
+- C6: Skill libraries likely require lifecycle metadata such as maturity,
+  dependencies, rollback, and health to avoid flat-registry decay.
+- C7: Stage-aware memory with pre/postconditions is a stronger candidate for web
+  workflows than flat semantic retrieval.
+- C8: Skill evolution requires diagnosis and preservation constraints to avoid
+  overfitting and regression.
+- C9: External skill packages create supply-chain and prompt-injection surfaces.
+- C10: A compiled bridge between Evidence IR and Runtime IR may better explain
+  the combined requirements than any single skill format.
 
 ## Current unsupported claims
 
-- "SkillPack should become a separate protocol now."
-- "ContractSpec is the final CAK skill abstraction."
-- "A skill is universally a Program Function."
-- "A skill is universally executable code."
-- "A skill is universally a workflow."
-- "Package format solves runtime activation and intervention."
-- "Self-verification is enough for admission."
-- "Formal model checking is feasible for all CAK skill domains."
-- "Seed research-process refs prove the quality of this run."
-- "Skill supply-chain risk is fully understood."
+- CAK should standardize SkillPack now.
+- ContractSpec is the final skill abstraction.
+- Program Functions are sufficient for all active skills.
+- Agent Skills-style packaging is sufficient for runtime control.
+- StageGraph should replace every workflow representation.
+- SkillGraph governance is mandatory before any skill experiment.
+- The compiled-bridge hypothesis is better than package + tests.
+- Source-ledgered abstracts are enough for a final RDR.
+- Security/admission design is complete.
+- Older planning/cognitive-architecture references support the current
+  hypothesis.
 
 ## Open unknowns
 
-- What is the minimum runtime hook model needed to compare passive and active
-  skills?
-- Which state variables are observable enough for typed-state retrieval and
-  ContractSpec-style checking?
-- How should CAK measure activation precision/recall for skills?
-- How should CAK measure prevented failures rather than just post-hoc success?
-- What security gate is mandatory before executable or active skills can run?
-- How should conflicts between two active skills be detected and resolved?
-- What is the authoring burden of hybrid packages with behavior, contracts,
-  verifiers, tests, and telemetry?
-- Which older planning/cognitive-architecture mechanisms transfer and which
-  fail for LLM agents?
-
-## Minimal experiment candidates
-
-### Experiment A - Same traces, six skill forms
-
-Take a small corpus of agent failure traces and encode the same repair as:
-
-- text-only advice;
-- workflow;
-- executable script/code skill;
-- HASP-style Program Function;
-- ContractSpec/verifier obligation;
-- hybrid package.
-
-Measure task success, repair success, activation precision/recall, false
-positive intervention, overblocking, auditability, latency/cost, and human
-review burden.
-
-### Experiment B - Retrieval mode comparison
-
-For the same candidate skills, compare:
-
-- semantic retrieval over descriptions;
-- typed-state predicate matching;
-- failure-signature routing;
-- verifier-triggered retry.
-
-Measure activation precision/recall and wrong-state application.
-
-### Experiment C - Skill pollution simulation
-
-Create broad, narrow, stale, conflicting, and malicious candidate skills. Run
-admission gates in shadow mode:
-
-- syntax/interface/mock execution;
-- replay tests;
-- counterexample tests;
-- security review;
-- utility threshold;
-- quarantine and retirement.
-
-Measure library pollution, conflict rate, review burden, and rollback success.
+- Is compiled bridge too complex?
+- Can a simpler package + tests approach work?
+- What is the minimal Runtime IR?
+- What is the minimal Evidence IR?
+- How much security/admission is necessary before runtime use?
+- Can ContractSpec, PFs, and StageGraph share one activation model?
+- What benchmark/failure traces should be used?
 
 ## Quality gate status
 
-Current status: exploratory.
+Gate status: exploratory.
 
-Research-ready blockers:
+Target gate for this packet: research-ready, not decision-ready.
 
-- Full-paper inspection is missing for the main papers.
-- Implementation repos have not been inspected.
-- Independent security analyses are missing.
-- Research-process seed refs are not inspected.
-- Older planning/cognitive-architecture sources are not inspected.
-- Debate has not run.
+Decision-ready status: not decision-ready.
 
-Decision-ready blockers:
+Using `docs/rd/research_quality_gate.md`, this run remains exploratory because:
 
-- No adversarial debate output yet.
-- No source-ledger audit by an independent reviewer.
-- No minimal experiment has been run.
-- No counterexample source beyond HMT/security warnings has been inspected.
-- Hypotheses have kill criteria but no measured results.
+- more full-paper and implementation-source inspection is needed;
+- adversarial debate is planned but not run;
+- evidence audit is not complete;
+- minimal experiment is described but not implemented;
+- counterevidence is incomplete;
+- older planning/cognitive architecture sources are uninspected leads;
+- security references are partially inspected but not fully audited;
+- claims are mostly abstract-level and should not decide architecture.
 
-## Missing artifacts before decision-ready
+## Minimal experiment candidates
 
-- Completed debate with all roles in `debate.md`.
-- Full-paper source-ledger entries for HASP, AWM, Voyager, VASO, PSN, and HMT.
-- Implementation/repo inspections where available.
-- At least one independent skill security or supply-chain analysis.
-- At least one negative result or limitation source.
-- Experiment protocol for same-trace comparison across skill forms.
-- Quality gate pass recorded after evidence audit.
+Experiment A: same failure traces, multiple representations:
+
+- Agent Skills-style package;
+- ContractSpec;
+- Program Function;
+- StageGraph/HMT-like memory;
+- SkillGraph node;
+- compiled hybrid artifact.
+
+Experiment B: same skill package imported under different admission gates:
+
+- no admission;
+- static validation only;
+- verifier-gated;
+- replay/shadow-gated;
+- security+provenance gated.
+
+Experiment C: same workflow encoded as:
+
+- linear workflow;
+- state machine;
+- StageGraph;
+- Program Function;
+- ContractSpec + repair handler.
 
 ## Recommended next step
 
-Run adversarial debate and evidence audit before drafting RDR-001.
-
-After debate, update:
-
-- `source_ledger.yaml`;
-- `pattern_matrix.md`;
-- `claim_matrix.md`;
-- `hypothesis_matrix.md`;
-- `adversarial_review.md`;
-- this decision packet.
-
-Only then decide whether RDR-001 is ready to be written.
+Run evidence audit and structured debate before writing final RDR-001.

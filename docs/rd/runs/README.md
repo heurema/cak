@@ -2,6 +2,8 @@
 
 Future research runs may live here or in `research/runs/`.
 
+- [RDR-001 — What is an agent-native skill?](rdr_001_agent_native_skill/)
+
 Suggested structure:
 
 ```text

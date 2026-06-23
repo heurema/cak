@@ -1,189 +1,30 @@
-# RDR-001 Debate Plan
+# Debate Plan — RDR-001 Agent-Native Skill
 
-Debate status: not yet run.
+Debate status: not yet run
 
-This file does not fabricate a multi-agent debate. It defines the debate roles,
-prompt skeletons, and expected outputs for the next research step.
+This file does not fabricate a real multi-agent debate. It defines the debate
+to run after evidence audit.
 
 ## Roles
 
-### Scout
+| Role | Responsibility | Prompt skeleton | Expected output | Artifact updated |
+|---|---|---|---|---|
+| Scout | Find missing papers, repos, docs, security analyses, benchmarks, negative results, and older planning/cognitive-architecture sources. | "Find candidate sources for RDR-001. Output leads only. Mark primary/secondary, source class, relevance, and inspection priority. Do not make claims from uninspected sources." | Lead list with inspection priority and suspected limitations. | `source_ledger.yaml` leads |
+| Archivist | Inspect assigned sources and extract claims, passages, limitations, counterclaims, and patterns. | "Inspect only assigned sources. Extract claims with supporting passages and locations. Reject unsupported claims. Distinguish inspected sources from leads." | Source ledger entries, supported claims, rejected claims. | `source_ledger.yaml`, `claim_matrix.md`, `pattern_matrix.md` |
+| Builder | Propose CAK-native hypotheses and minimal experiments without deciding architecture. | "Using only source-ledgered claims, refine hypotheses for what a skill could be. Include runtime hooks, verifier needs, telemetry, and minimal experiments." | Hypothesis refinements and experiment sketches. | `hypothesis_matrix.md`, `decision_packet.md` |
+| Skeptic | Attack assumptions, human-software defaults, overclaims, and premature decisions. | "Attack every claim and hypothesis. Identify weak evidence, missing counterexamples, hidden architecture decisions, and premature standardization." | Objections, blockers, missing counterevidence. | `adversarial_review.md`, `decision_packet.md` |
+| Alienist | Generate non-obvious agent-native alternatives. | "Propose weird but testable alternatives: runtime patches, type-error handlers, trace theorems, causal interventions, ecological objects. For each, define experiment and kill criterion." | Alternative hypotheses and kill criteria. | `hypothesis_matrix.md` |
+| Security reviewer | Evaluate prompt injection, tool misuse, executable code, supply chain, data exfiltration, approval widening, and self-poisoning. | "Treat skills as execution, prompt-injection, and supply-chain surfaces. Identify required trust metadata, sandboxing, permission declarations, review gates, quarantine, and rollback." | Threat model notes, required gates, unsafe hypotheses. | `source_ledger.yaml`, `pattern_matrix.md`, `decision_packet.md` |
+| Evaluator | Define metrics, baselines, benchmarks, minimal experiments, and stop/defer criteria. | "Design experiments that distinguish text-only skills, workflows, executable skills, PFs, ContractSpec, verifier-gated transitions, causal interventions, and hybrids." | Experiment matrix, metrics, baselines, kill criteria. | `research_plan.md`, `hypothesis_matrix.md`, `decision_packet.md` |
+| Judge | Synthesize debate without adding unsupported claims. | "Classify maturity using `research_quality_gate.md`. Do not introduce new claims. List required updates before final RDR." | Maturity verdict, supported/unsupported claims, next step. | `decision_packet.md` |
 
-Responsibility:
-Find missing papers, repos, docs, negative results, benchmarks, and security
-analyses. Separate leads from inspected evidence.
+## Debate motions
 
-Prompt skeleton:
-
-```text
-You are the Scout for RDR-001. Find primary sources and concrete artifacts for
-agent-native skills, workflow memory, active skill intervention, semantic
-contracts, skill lifecycle, and skill security. Output leads only. Mark each as
-primary/secondary, likely relevance, and why it should or should not enter the
-source ledger. Do not make claims from uninspected sources.
-```
-
-Expected output:
-
-- candidate sources;
-- source class;
-- likely relevance;
-- inspection priority;
-- suspected limitations.
-
-### Archivist
-
-Responsibility:
-Inspect sources and update `source_ledger.yaml`, `claim_matrix.md`, and
-`pattern_matrix.md`.
-
-Prompt skeleton:
-
-```text
-You are the Archivist for RDR-001. Inspect only the assigned sources. For each
-source, extract concrete claims, supporting passages, locations, limitations,
-counterclaims, and patterns. Reject unsupported claims. Update the source
-ledger and identify which claims can enter the claim matrix.
-```
-
-Expected output:
-
-- source ledger entries;
-- supported claims;
-- counterclaims;
-- pattern updates;
-- rejected or uninspected leads.
-
-### Builder
-
-Responsibility:
-Propose CAK-native skill hypotheses and minimal experiments without making an
-architecture decision.
-
-Prompt skeleton:
-
-```text
-You are the Builder for RDR-001. Using only source-ledger-supported claims,
-propose CAK-native hypotheses for what a skill could be. Include runtime hooks,
-verifier needs, telemetry, and minimal experiments. Do not invent evidence.
-```
-
-Expected output:
-
-- hypothesis refinements;
-- candidate CAK artifact boundaries;
-- minimal experiment designs;
-- implementation-spike boundaries.
-
-### Skeptic
-
-Responsibility:
-Attack assumptions, human-software defaults, overclaims, and premature
-architecture.
-
-Prompt skeleton:
-
-```text
-You are the Skeptic for RDR-001. Attack every claim and hypothesis. Identify
-human-software defaults being smuggled in, missing counterevidence, weak source
-classes, and architecture decisions hidden inside research wording.
-```
-
-Expected output:
-
-- unsupported claims;
-- missing counterexamples;
-- overfit risks;
-- decision-readiness blockers.
-
-### Alienist
-
-Responsibility:
-Generate non-obvious agent-native alternatives that are not direct copies of
-human software engineering.
-
-Prompt skeleton:
-
-```text
-You are the Alienist for RDR-001. Propose weird but testable alternatives for
-agent-native skills: runtime patches, type-error handlers, trace theorems,
-causal interventions, ecological objects, or other non-human-software defaults.
-For each, define a minimal experiment and kill criterion.
-```
-
-Expected output:
-
-- non-obvious alternatives;
-- experiment sketches;
-- kill criteria;
-- risks of weird alternatives.
-
-### Security reviewer
-
-Responsibility:
-Evaluate prompt injection, tool misuse, executable code risk, supply-chain risk,
-data exfiltration, approval widening, and self-poisoning.
-
-Prompt skeleton:
-
-```text
-You are the Security reviewer for RDR-001. Treat skills as potential execution,
-prompt-injection, and supply-chain surfaces. Identify required trust metadata,
-sandboxing, permission declarations, review gates, quarantine, and rollback.
-Use only source-ledger evidence or mark missing evidence clearly.
-```
-
-Expected output:
-
-- threat model draft;
-- security evidence gaps;
-- required gates;
-- unsafe hypotheses;
-- security kill criteria.
-
-### Evaluator
-
-Responsibility:
-Define metrics, baselines, benchmarks, minimal experiments, and stop/defer
-criteria.
-
-Prompt skeleton:
-
-```text
-You are the Evaluator for RDR-001. Define experiments that distinguish text-only
-skills, workflows, executable skills, Program Functions, ContractSpec,
-verifier-gated transitions, causal interventions, and hybrid packages. Include
-metrics, baselines, failure modes, and kill criteria.
-```
-
-Expected output:
-
-- experiment matrix;
-- metrics;
-- baselines;
-- kill criteria;
-- cost/latency/auditability notes.
-
-### Judge
-
-Responsibility:
-Synthesize debate outputs without introducing unsupported claims. Decide only
-the research maturity status and next step.
-
-Prompt skeleton:
-
-```text
-You are the Judge for RDR-001. Synthesize the debate. You may not introduce new
-claims. Classify the packet as exploratory, research-ready, decision-ready,
-implementation-ready, or standardization-ready according to
-research_quality_gate.md. List required updates before drafting the RDR.
-```
-
-Expected output:
-
-- maturity classification;
-- supported claims;
-- unsupported claims;
-- required source-ledger updates;
-- next research step;
-- no architecture decision.
+| Motion | Pro side | Con side | Required evidence | Possible experiment |
+|---|---|---|---|---|
+| Motion A: “Agent-native skill should be a compiled bridge between Evidence IR and Runtime IR.” | Builder, Security reviewer | Skeptic, Alienist | Source-ledgered evidence that package, code, PF, contract, memory, lifecycle, and security needs cannot be captured by one simpler primitive. | Same traces represented as package, PF, ContractSpec, StageGraph, SkillGraph node, and compiled hybrid. |
+| Motion B: “Agent Skills-style package is enough for v0.1/v0.2 skill interoperability.” | Scout, Builder | Security reviewer, Skeptic | Agent Skills docs, SkillJuror, SkillReducer, security papers, and evidence about package/runtime gaps. | Same package under no admission, static validation, verifier-gated, replay-gated, and security+provenance gates. |
+| Motion C: “Program Functions are the best primitive for active skills.” | Builder, Evaluator | Skeptic, Security reviewer | HASP details, activation precision evidence, false-positive/overblocking data, permission model. | Shadow-mode PF intervention on recorded traces. |
+| Motion D: “ContractSpec should remain separate from SkillSpec.” | Skeptic, Security reviewer | Builder | VASO details, CAK state observability, grounding failures, verifier value. | Encode one invariant as SkillSpec, ContractSpec, PF, and verifier plan. |
+| Motion E: “StageGraph should replace linear workflow memory.” | Builder, Evaluator | Skeptic | AWM/HMT full-paper evidence, web-agent mismatch traces, pre/postcondition observability. | Same workflow encoded as linear workflow, state machine, StageGraph, PF, and ContractSpec + repair handler. |
+| Motion F: “SkillGraph lifecycle/governance is premature.” | Skeptic, Scout | Builder, Security reviewer | Skill library pollution evidence, PSN/SkillWiki details, security/lifecycle data, CAK skill-volume assumptions. | Simulate flat registry vs quarantine vs lifecycle graph under broad/narrow/conflicting candidates. |
