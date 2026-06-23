@@ -7,7 +7,7 @@ date_started: "2026-06-23"
 source_policy:
   claim_support: "Only inspected=true sources with explicit claims may support claim_matrix entries."
   seed_policy: "Seed references and uninspected leads may inform search only; they do not support claims."
-  limitation: "Several inspected paper entries are abstract-level inspections and are not decision-grade evidence."
+  limitation: "Top-6 papers now have targeted full-paper inspection, but this is still not reproducibility or decision-grade implementation validation."
 
 sources:
   - id: src_hasp_arxiv
@@ -48,6 +48,48 @@ sources:
         location: "arXiv API abstract for 2605.17734v1"
         confidence: medium
         limitations: "Teacher-review cost, validation quality, and false-positive intervention risk are not audited here."
+      - id: claim_hasp_003
+        claim: >-
+          HASP's full paper defines a Program Function as an executable module
+          with `should_activate` and `intervene` parts, wrapped by an external
+          harness before the next action executes.
+        supporting_passage: >-
+          "Each skill in HASP is represented as a Program Function (PF), an
+          executable module that decides whether to intervene under the current
+          state and proposed action, and if so, how to repair the next decision.
+          It has two parts: should_activate, which decides whether the skill
+          should fire, and intervene, which returns the repair."
+        location: "Full paper Section 3.1, Inference-Time Agent Harness with Program Functions"
+        confidence: high
+        limitations: "Defines HASP's PF abstraction; does not prove CAK should adopt PFs universally."
+      - id: claim_hasp_004
+        claim: >-
+          HASP reports PF-only intervention outperforming prompt-only skills in
+          its evaluated web-search, coding, and math settings.
+        supporting_passage: >-
+          "PF-only already gives large gains over the base multi-loop agent and
+          also outperforms Prompt-Only Skills... On web-search reasoning,
+          PF-only improves average accuracy to 51.0%, compared with 20.5% for
+          Prompt-Only Skills. On coding, PF-only reaches 63.4% average pass@1.
+          On mathematical reasoning, PF-only reaches 35.9%, compared with 32.8%
+          for Prompt-Only Skills."
+        location: "Full paper mechanism/evaluation analysis"
+        confidence: medium
+        limitations: "Evaluation is HASP-specific; CAK needs activation false-positive and authority-boundary measurements."
+      - id: claim_hasp_005
+        claim: >-
+          HASP explicitly guards skill library admission with executable
+          validation and teacher review to reduce library pollution.
+        supporting_passage: >-
+          "To prevent library pollution, candidates are admitted only after
+          executable validation and teacher review: Qexec(c) checks syntax,
+          interface validity, mock execution, and legal return types, while
+          Qteach(c) evaluates whether the candidate captures a reusable failure
+          pattern, fires under appropriate conditions, and proposes a useful
+          repair."
+        location: "Full paper Section 3, skill evolution/admission"
+        confidence: medium
+        limitations: "Teacher review is an evaluation component, not a reusable CAK governance design."
     counterclaims:
       - "PFs may overblock or override valid behavior when activation precision is poor."
       - "HASP does not by itself prove that every skill should be an active runtime intervention."
@@ -64,7 +106,7 @@ sources:
         what_not_to_copy: "Do not permit intervention without permission, risk, and rollback semantics."
         agent_native_adaptation: "Attach intervention mode to typed effect and verifier policy."
         risk: "Action override can become hidden authority widening."
-    notes: "Inspected arXiv metadata/abstract. Full paper remains needed before decision-grade use."
+    notes: "Targeted full-paper inspection added for PF interface, evaluation contrast, and library pollution guards. Full reproducibility not attempted."
 
   - id: src_awm_arxiv
     title: "Agent Workflow Memory"
@@ -99,6 +141,36 @@ sources:
         location: "arXiv API abstract for 2409.07429v1"
         confidence: medium
         limitations: "Benchmark gains do not decide whether workflow memory should be passive, active, or compiled."
+      - id: claim_awm_003
+        claim: >-
+          AWM represents a workflow as a textual description plus a series of
+          steps, and induces workflows by abstracting reusable subroutines from
+          concrete trajectories.
+        supporting_passage: >-
+          "Similar to an experience, a workflow comprises two components: first,
+          a textual description of the workflow d; and second, a series of steps
+          to finish the workflow... we deliberately prompt models to induce
+          workflows at finer granularities... we enhance workflow generality by
+          abstracting out example-specific contexts."
+        location: "Full paper Section 2.2 Workflow Representation and LM-based Workflow Induction"
+        confidence: high
+        limitations: "Workflow representation remains textual/procedural; runtime state checks are not the core abstraction."
+      - id: claim_awm_004
+        claim: >-
+          AWM reports that workflow guidance can bias agents toward actions not
+          relevant to the current environment state, and online induction can
+          create incorrect workflows.
+        supporting_passage: >-
+          "AWM gets slightly lower action F1 scores than MindAct, possibly
+          because the augmented workflows may guide the agent to take certain
+          actions aligning to the workflows, which are not always relevant to
+          the particular environment state at hand... AWMonline induces
+          workflows from model-predicted trajectories that are not always
+          correct, thus can lead to incorrect workflows that degrade model
+          performance."
+        location: "Full paper analysis of workflow divergence and online induction"
+        confidence: medium
+        limitations: "This is a web-navigation failure mode; CAK needs its own trace corpus."
     counterclaims:
       - "AWM alone does not establish typed preconditions, runtime admission, or security semantics."
     extracted_patterns:
@@ -108,7 +180,7 @@ sources:
         what_not_to_copy: "Do not assume a linear workflow is valid in every similar task."
         agent_native_adaptation: "Bind workflows to preconditions, postconditions, and repair exits."
         risk: "Wrong-state activation."
-    notes: "Inspected arXiv metadata/abstract."
+    notes: "Targeted full-paper inspection added for workflow representation, abstraction, and failure modes."
 
   - id: src_voyager_arxiv
     title: "Voyager: An Open-Ended Embodied Agent with Large Language Models"
@@ -147,6 +219,35 @@ sources:
         location: "arXiv API abstract for 2305.16291v2"
         confidence: medium
         limitations: "Transfer is shown within Minecraft-style environments, not arbitrary agent runtimes."
+      - id: claim_voyager_003
+        claim: >-
+          Voyager's full paper frames skills as executable code over control
+          primitive APIs and admits them after environment feedback,
+          interpreter errors, and self-verification.
+        supporting_passage: >-
+          "Inspired by the generality, interpretability, and universality of
+          programs, we represent each skill with executable code... The input
+          prompt... consists of... Control primitive APIs, and relevant skills
+          retrieved from the skill library... The generated code from the last
+          round, environment feedback, execution errors, and critique... During
+          each round of code generation, we execute the generated program to
+          obtain environment feedback and execution errors..."
+        location: "Full paper Sections 2.2-2.3"
+        confidence: high
+        limitations: "Requires a code-as-action environment with available control primitive APIs."
+      - id: claim_voyager_004
+        claim: >-
+          Voyager documents limits where self-verification may fail and code
+          generation can hallucinate unavailable APIs or impossible tasks.
+        supporting_passage: >-
+          "Occasionally, self-verification module may also fail... The automatic
+          curriculum occasionally proposes unachievable tasks... Hallucinations
+          also occur during the code generation process... it may call functions
+          absent in the provided control primitive APIs, leading to code
+          execution errors."
+        location: "Full paper Section 4, Limitations and Future Work"
+        confidence: high
+        limitations: "Supports limits of executable skill/self-verification approaches, not a general rejection."
     counterclaims:
       - "Executable code skills do not automatically solve activation, admission, permission, or supply-chain risk."
     extracted_patterns:
@@ -162,7 +263,7 @@ sources:
         what_not_to_copy: "Do not treat self-verification as independent proof."
         agent_native_adaptation: "Pair self-verification with replay, external verifiers, and review."
         risk: "Self-confirmation and sampled-test overfitting."
-    notes: "Inspected arXiv metadata/abstract."
+    notes: "Targeted full-paper inspection added for code-as-skill representation, feedback loop, and limitations."
 
   - id: src_agent_skills_spec
     title: "Agent Skills"
@@ -291,6 +392,20 @@ sources:
         location: "arXiv API abstract for 2606.05395v1"
         confidence: medium
         limitations: "Supports a verifier pattern, not a CAK ContractSpec decision."
+      - id: claim_vaso_004
+        claim: >-
+          VASO explicitly shows that incorrect proposition grounding can produce
+          false formal safety guarantees.
+        supporting_passage: >-
+          "When this assumption is violated, formal verification may produce
+          false safety guarantees... This example highlights that the
+          correctness of verification fundamentally depends on the fidelity of
+          the proposition-aligned mapping; an incorrect abstraction of low-level
+          robot dynamics may lead to spurious verification results despite
+          formally correct reasoning over the symbolic model."
+        location: "Full paper Section 5 / Appendix failure case on proposition-aligned labeling"
+        confidence: high
+        limitations: "Robotics grounding example; CAK must identify its own proposition/state grounding failures."
     counterclaims:
       - "Formal contracts depend on correct grounding; wrong propositions can make verification misleading."
     extracted_patterns:
@@ -306,7 +421,7 @@ sources:
         what_not_to_copy: "Do not auto-promote revisions from one counterexample."
         agent_native_adaptation: "Route revisions through quarantine, replay, and review."
         risk: "Narrow counterexamples can overfit skill changes."
-    notes: "Inspected arXiv metadata/abstract."
+    notes: "Targeted full-paper inspection added for semantic contract definition and grounding-failure limitation."
 
   - id: src_psn_arxiv
     title: "Evolving Programmatic Skill Networks"
@@ -342,6 +457,33 @@ sources:
         location: "arXiv API abstract for 2601.03509v1"
         confidence: medium
         limitations: "Symbolic-program assumptions may not fit ambiguous LLM-agent state."
+      - id: claim_psn_003
+        claim: >-
+          PSN constrains updates by recent repair proposals, reduces update
+          frequency for mature skills, and reverts structural refactors when
+          short-horizon success drops.
+        supporting_passage: >-
+          "To stabilize learning, updates are constrained by a rolling buffer of
+          the 5 most recent repair proposals, preventing contradictory edits...
+          Mature skills stabilize with low update probability, while immature
+          skills remain plastic... All refactor proposals are tentative... If
+          the task success rate drops by more than 20%, the refactor is reverted
+          using logged inverse operations."
+        location: "Full paper Section 2, optimization/refactor mechanisms"
+        confidence: medium
+        limitations: "Thresholds and symbolic-program assumptions are PSN-specific."
+      - id: claim_psn_004
+        claim: >-
+          PSN reports that without maturity stabilization, downstream failures
+          repeatedly modify converged skills and cause oscillatory behavior.
+        supporting_passage: >-
+          "Without stabilization, converged skills are repeatedly modified by
+          downstream failures, leading to oscillatory behavior. By contrast,
+          maturity-aware gating progressively reduces the update frequency of
+          reliable skills while allowing immature skills to remain plastic."
+        location: "Full paper ablation discussion"
+        confidence: medium
+        limitations: "Supports lifecycle gating pressure, not a mandatory CAK SkillGraph."
     counterclaims:
       - "A lifecycle graph may be overengineering if skill counts remain small or runtime hooks remain passive."
     extracted_patterns:
@@ -351,7 +493,7 @@ sources:
         what_not_to_copy: "Do not equate larger skill libraries with better behavior."
         agent_native_adaptation: "Represent admitted skill artifacts as lifecycle nodes with health and rollback metadata."
         risk: "Governance machinery can become process overhead."
-    notes: "Inspected arXiv metadata/abstract."
+    notes: "Targeted full-paper inspection added for maturity gating, rollback validation, and ablation limits."
 
   - id: src_hmt_arxiv
     title: "Enhancing Web Agents with a Hierarchical Memory Tree"
@@ -388,6 +530,33 @@ sources:
         location: "arXiv API abstract for 2603.07024v1"
         confidence: medium
         limitations: "Requires observable preconditions/postconditions."
+      - id: claim_hmt_003
+        claim: >-
+          HMT reports that hierarchical structure and pre/postconditions reduce
+          context pollution, while raw identifiers fail badly in cross-website
+          generalization.
+        supporting_passage: >-
+          "Our method substantially outperforms 'w/ Flat Memory', which
+          indicates that the hierarchical structure reduces context pollution...
+          With the removal of pre/post-conditions, the performance drops by
+          2.5% on WebArena... replacing semantic descriptions with raw
+          identifiers... proves catastrophic for cross-website generalization...
+          StepSR plummets from 39.7% to 12.4%."
+        location: "Full paper ablation studies"
+        confidence: medium
+        limitations: "Web UI benchmark evidence; CAK must verify comparable state observability."
+      - id: claim_hmt_004
+        claim: >-
+          HMT still has failure modes in ambiguous grounding and subtle state
+          transitions.
+        supporting_passage: >-
+          "Despite these capabilities, the system exhibits limitations in
+          scenarios involving Ambiguous Grounding or subtle state transitions...
+          Ambiguous Grounding occurs when the retrieved semantic description
+          lacks sufficient hierarchical context."
+        location: "Full paper failure mode analysis"
+        confidence: medium
+        limitations: "Shows StageGraph-like memory is not sufficient by itself."
     counterclaims:
       - "Structured memory may still need domain-specific selectors and action grounding."
     extracted_patterns:
@@ -397,7 +566,7 @@ sources:
         what_not_to_copy: "Do not reuse flat traces as universal workflows."
         agent_native_adaptation: "Compile stage predicates into typed runtime activation checks where possible."
         risk: "Preconditions can be incomplete or unobservable."
-    notes: "Inspected arXiv metadata/abstract."
+    notes: "Targeted full-paper inspection added for hierarchy, ablations, and failure modes."
 
   - id: src_skillwiki_arxiv
     title: "SkillWiki: A Living Knowledge Infrastructure for Agent Skills"
@@ -445,7 +614,7 @@ sources:
         what_not_to_copy: "Do not build a marketplace or wiki before minimal runtime/evidence needs are known."
         agent_native_adaptation: "Use provenance links as evidence IR for admitted skill artifacts."
         risk: "Infrastructure-first design can outrun validated need."
-    notes: "Inspected arXiv metadata/abstract; linked GitHub repo remains a lead."
+    notes: "Inspected arXiv metadata/abstract; linked GitHub repo has separate README-level inspected source entry."
 
   - id: src_skillrevise_arxiv
     title: "SkillRevise: Improving LLM-Authored Agent Skills via Trace-Conditioned Skill Revision"
@@ -484,6 +653,34 @@ sources:
         location: "arXiv API abstract for 2606.01139v3"
         confidence: medium
         limitations: "Verifier quality and regression preservation need deeper inspection."
+      - id: claim_skillrevise_003
+        claim: >-
+          SkillRevise preserves an evidence-to-edit trace with verification and
+          preservation constraints, execution anchors, and fallback behavior.
+        supporting_passage: >-
+          "The trace zi documents the evidence-to-edit mapping behind each
+          revision, including the applied principles, targeted spans in Si,
+          relevant verification and preservation constraints, expected
+          acceptance signals, and execution anchors... The returned artifact is
+          instead the first verifier-passing skill, or the utility fallback if
+          none succeeds."
+        location: "Full paper Figure 2 and Section 3.4"
+        confidence: high
+        limitations: "Still depends on verifier-visible feedback."
+      - id: claim_skillrevise_004
+        claim: >-
+          SkillRevise identifies failure modes where sparse/misaligned tests
+          can cause overfitting, no-skill exploration can be better, and
+          diagnosis can misattribute environment/model failures to the skill.
+        supporting_passage: >-
+          "Sparse or misaligned tests can lead revision to overfit visible
+          checks, and some tasks remain better solved by direct no-skill
+          exploration... Other failures arise when Diagnosis attributes
+          environment or model-capability failures to the skill, when a revision
+          overfits to the observed verifier..."
+        location: "Full paper limitations and failure taxonomy"
+        confidence: high
+        limitations: "Supports stronger preservation constraints but not a complete CAK revision design."
     counterclaims:
       - "Revision can overfit to the current trace unless preservation constraints and regression tests exist."
     extracted_patterns:
@@ -493,7 +690,7 @@ sources:
         what_not_to_copy: "Do not let revision overwrite previous skill evidence silently."
         agent_native_adaptation: "Preserve diagnosis, trace, and verifier records as Evidence IR."
         risk: "Trace-conditioned repair can regress behavior outside the sampled case."
-    notes: "Inspected arXiv metadata/abstract."
+    notes: "Targeted full-paper inspection added for evidence-to-edit trace, preserve ledger, and failure modes."
 
   - id: src_skilljuror_arxiv
     title: "SkillJuror: Measuring How Agent Skill Organization Changes Runtime Behavior"
@@ -661,6 +858,23 @@ sources:
         location: "arXiv API abstract for 2602.14211v3"
         confidence: medium
         limitations: "Attack effectiveness and defenses remain to inspect in full."
+      - id: claim_skillject_003
+        claim: >-
+          SkillJect argues skill-based prompt injection is harder because
+          malicious behavior can be distributed across SKILL.md and auxiliary
+          scripts, requiring cross-file consistency checking and semantic
+          review.
+        supporting_passage: >-
+          "Skill-based prompt injection is harder because skills are treated as
+          trusted capability extensions, malicious behavior can be distributed
+          across SKILL.md and auxiliary scripts... existing scanners... may
+          miss attacks whose intent emerges only from the interaction among
+          SKILL.md, repository files, or cross-file payload hiding... suggesting
+          the need for cross-file consistency checking, helper-script semantic
+          analysis, and execution-aware vetting."
+        location: "Full paper threat model and defenses discussion"
+        confidence: medium
+        limitations: "Security-defense requirements still need CAK-specific gate design."
     counterclaims:
       - "SkillJect supports security/admission pressure, not a complete CAK admission design."
     extracted_patterns:
@@ -670,7 +884,7 @@ sources:
         what_not_to_copy: "Do not inspect the instruction file alone."
         agent_native_adaptation: "Attach a security envelope to compiled admitted artifacts."
         risk: "Benign-looking setup instructions can trigger hidden payloads."
-    notes: "Inspected arXiv metadata/abstract."
+    notes: "Targeted full-paper inspection added for cross-file attack mechanics and defense gap."
 
   - id: src_malskillbench_arxiv
     title: "MalSkillBench: A Runtime-Verified Benchmark of Malicious Agent Skills"
@@ -696,6 +910,21 @@ sources:
         location: "arXiv API abstract for 2606.07131v3"
         confidence: medium
         limitations: "Benchmark construction and labels need full-paper inspection."
+      - id: claim_malskillbench_002
+        claim: >-
+          MalSkillBench constructs runtime-verified malicious skills and reports
+          that supply-chain scanners and prompt-injection defenses each see only
+          part of the hybrid risk.
+        supporting_passage: >-
+          "It contains 3,944 malicious skills... 3,214 come from a closed-loop
+          Generate-Verify-Feedback pipeline that admits only samples whose
+          malicious behavior fires inside a Docker sandbox... Supply-chain
+          scanners and prompt-injection defenses each see only one half of a
+          skill, and no combination recovers the relationship between code and
+          instructions."
+        location: "Full paper abstract/introduction"
+        confidence: medium
+        limitations: "Benchmark was not reproduced locally."
     counterclaims:
       - "A malicious-skill benchmark does not by itself decide CAK's skill abstraction."
     extracted_patterns:
@@ -705,7 +934,7 @@ sources:
         what_not_to_copy: "Do not treat prompt-only or code-only scanners as complete."
         agent_native_adaptation: "Use sandboxed replay/shadow gates for high-risk skills."
         risk: "Benchmark coverage can miss novel agent-control attacks."
-    notes: "Inspected arXiv metadata/abstract."
+    notes: "Targeted full-paper inspection added for runtime verification and hybrid code/instruction risk."
 
   - id: src_repo_context_security_arxiv
     title: "Context Matters: Repository-Aware Security Analysis of the Agent Skill Ecosystem"
@@ -744,6 +973,18 @@ sources:
         location: "arXiv API abstract for 2603.16572v2"
         confidence: medium
         limitations: "The attack vector details are not inspected beyond the abstract."
+      - id: claim_repo_context_003
+        claim: >-
+          Repository-aware security analysis warns that scanner outputs should
+          be treated as contextual risk signals rather than definitive labels.
+        supporting_passage: >-
+          "Scanner outputs should be interpreted as alerts rather than
+          ground-truth labels... limitations reinforce our central conclusion:
+          scanner results should be treated as risk signals that require
+          contextual interpretation, not as definitive labels."
+        location: "Full paper scanner limitations discussion"
+        confidence: medium
+        limitations: "Does not remove need for runtime containment or admission gates."
     counterclaims:
       - "Context-aware classification can reduce false positives but cannot replace runtime admission for active skills."
     extracted_patterns:
@@ -753,7 +994,7 @@ sources:
         what_not_to_copy: "Do not let contextual benignness bypass runtime containment."
         agent_native_adaptation: "Include repository provenance and maintenance health in security envelope."
         risk: "Abandoned repositories can become supply-chain takeover points."
-    notes: "Inspected arXiv metadata/abstract."
+    notes: "Targeted full-paper inspection added for scanner false-positive/context limitation."
 
   - id: src_cak_research_protocol
     title: "CAK Research Run Protocol"
@@ -788,35 +1029,241 @@ sources:
         risk: "Process overhead if the ledger does not reject weak claims."
     notes: "Local process source; included to support research-process patterns, not technical skill claims."
 
-  - id: lead_voyager_repo
+  - id: src_voyager_repo
     title: "Voyager implementation repository"
-    url: "https://voyager.minedojo.org/"
+    url: "https://github.com/MineDojo/Voyager"
     type: repo
     primary: true
-    inspected: false
-    inspected_by: ""
-    date_accessed: ""
+    inspected: true
+    inspected_by: codex
+    date_accessed: "2026-06-23"
     relevance: "Concrete executable-skill implementation artifact."
-    reliability: unknown
-    claims: []
-    counterclaims: []
-    extracted_patterns: []
-    notes: "Lead only. Inspect repository/code before using implementation claims."
+    reliability: medium
+    claims:
+      - id: claim_voyager_repo_001
+        claim: >-
+          The Voyager repository publishes the Voyager implementation and
+          documents runtime prerequisites including Python, Node.js, Minecraft,
+          Mineflayer, and an OpenAI API key.
+        supporting_passage: >-
+          "In this repo, we provide Voyager code." The README installation
+          section lists Python, Node.js, Minecraft, Mineflayer, and OpenAI API
+          key setup.
+        location: "Repository README, installation and overview"
+        confidence: medium
+        limitations: "README-level inspection only; repository was not run locally."
+      - id: claim_voyager_repo_002
+        claim: >-
+          The Voyager README documents loading a learned skill library from
+          `skill_library_dir` and running inference over decomposed sub-goals.
+        supporting_passage: >-
+          "Run Voyager for a specific task with a learned skill library" shows
+          `Voyager(..., skill_library_dir=\"./skill_library/trial1\")` and
+          `voyager.inference(sub_goals=sub_goals)`.
+        location: "Repository README, inference with learned skill library"
+        confidence: medium
+        limitations: "Shows usage shape, not skill admission or security behavior."
+    counterclaims:
+      - "Repository availability does not prove the executable-skill model transfers to CAK."
+    extracted_patterns:
+      - pattern_id: pattern_executable_skill_repo
+        pattern: "implementation artifact with learned skill-library loading"
+        what_to_copy: "Inspect concrete load/inference boundaries before designing abstractions."
+        what_not_to_copy: "Do not treat a demo README as validation or security review."
+        agent_native_adaptation: "Use implementation repos as evidence leads for minimal experiments, not as standards."
+        risk: "Runtime dependencies can hide assumptions that do not fit CAK."
+    notes: "README-level repository inspection only; implementation was cloned but not run."
 
-  - id: lead_skillwiki_repo
+  - id: src_skillwiki_repo
     title: "SkillWiki implementation repository"
     url: "https://github.com/Huangdingcheng/SkillWiki"
     type: repo
     primary: true
-    inspected: false
-    inspected_by: ""
-    date_accessed: ""
+    inspected: true
+    inspected_by: codex
+    date_accessed: "2026-06-23"
     relevance: "Implementation artifact for provenance-aware skill infrastructure."
-    reliability: unknown
-    claims: []
-    counterclaims: []
-    extracted_patterns: []
-    notes: "Lead only. Inspect repository docs/code before using implementation claims."
+    reliability: medium
+    claims:
+      - id: claim_skillwiki_repo_001
+        claim: >-
+          The SkillWiki README frames the system as infrastructure that turns
+          trajectories, documents, API specs, and execution experience into
+          reusable skill assets grounded in evidence, versioned, and evolved.
+        supporting_passage: >-
+          "SkillWiki provides the missing infrastructure for agent skills. It
+          transforms heterogeneous knowledge sources — trajectories, documents,
+          API specs, and execution experience — into reusable skill assets that
+          are grounded in their originating evidence, version-controlled, and
+          continuously evolved."
+        location: "Repository README, overview"
+        confidence: medium
+        limitations: "README claim; implementation behavior was not validated."
+      - id: claim_skillwiki_repo_002
+        claim: >-
+          The SkillWiki README describes an S0-S7 lifecycle, typed provenance
+          edges, health/evolution machinery, and CLI commands for verification,
+          promotion, health, repair, and evolution.
+        supporting_passage: >-
+          "Eight-stage state machine (S0–S7) with automated verification and
+          full audit trail"; "Provenance knowledge graph — Typed edges —
+          depends_on, composes_with, evolved_from, replaces"; "Health &
+          evolution engine"; CLI commands include `skillwiki verify`,
+          `skillwiki promote`, `skillwiki health`, `skillwiki repair`, and
+          `skillwiki evolve`.
+        location: "Repository README, lifecycle/features/CLI"
+        confidence: medium
+        limitations: "Supports lifecycle vocabulary pressure, not a CAK SkillGraph decision."
+    counterclaims:
+      - "SkillWiki may be infrastructure-heavy relative to early CAK skill volume."
+    extracted_patterns:
+      - pattern_id: pattern_skillwiki_lifecycle_repo
+        pattern: "evidence-grounded skill lifecycle with health and repair commands"
+        what_to_copy: "Track lifecycle, provenance edges, health, and repair as inspectable metadata."
+        what_not_to_copy: "Do not import a full wiki/registry architecture before experiments."
+        agent_native_adaptation: "Treat lifecycle state and provenance as optional evidence dimensions to test."
+        risk: "Governance UI and graph concepts can outrun runtime need."
+    notes: "README-level repository inspection only; repository was cloned but not run."
+
+  - id: src_skilljuror_repo
+    title: "SkillJuror implementation repository"
+    url: "https://github.com/zhiyuchen-ai/skill-juror"
+    type: repo
+    primary: true
+    inspected: true
+    inspected_by: codex
+    date_accessed: "2026-06-23"
+    relevance: "Implementation artifact for skill organization and runtime-capture evaluation."
+    reliability: medium
+    claims:
+      - id: claim_skilljuror_repo_001
+        claim: >-
+          The SkillJuror repository currently publishes public data-preparation
+          and runtime-capture components while evaluation, judging, aggregate
+          reporting, and result viewing remain outside the release scope.
+        supporting_passage: >-
+          "This repository contains the public data-preparation and
+          runtime-capture components... Evaluation, judging, aggregate
+          reporting, and result-viewer components are outside the current
+          release scope."
+        location: "Repository README, scope"
+        confidence: medium
+        limitations: "Repository is partial; not enough to reproduce reported SkillJuror evaluation."
+      - id: claim_skilljuror_repo_002
+        claim: >-
+          The SkillJuror repository materializes package-organization variants
+          including single-file, progressive-disclosure, flatten-source,
+          source-bundle, and no-skill controls, and records trajectories rather
+          than performing judging in the released runtime capture component.
+        supporting_passage: >-
+          The README lists `single-file`, `progressive-disclosure`,
+          `flatten-source`, `source-bundle`, and `no-skill` controls, and says
+          "Runtime capture records trajectories only. Verification and judging
+          belong to the evaluation modules planned for future release."
+        location: "Repository README, variants and runtime capture"
+        confidence: medium
+        limitations: "Useful for experiment design, not direct evidence of evaluation outcomes."
+    counterclaims:
+      - "Released runtime capture alone cannot support claims about verifier-passing outcome gains."
+    extracted_patterns:
+      - pattern_id: pattern_package_variant_controls
+        pattern: "package organization controls with trajectory capture"
+        what_to_copy: "Compare skill package structures on the same task traces."
+        what_not_to_copy: "Do not infer judging results from trajectory capture alone."
+        agent_native_adaptation: "Use organization variants as minimal experiment arms."
+        risk: "Packaging effects can be confused with evaluation harness differences."
+    notes: "README-level repository inspection only; repository was cloned but not run."
+
+  - id: src_skillinject_repo
+    title: "Skill-Inject benchmark repository"
+    url: "https://github.com/aisa-group/skill-inject"
+    type: security
+    primary: true
+    inspected: true
+    inspected_by: codex
+    date_accessed: "2026-06-23"
+    relevance: "Implementation artifact for skill-file prompt injection experiments."
+    reliability: medium
+    claims:
+      - id: claim_skillinject_repo_001
+        claim: >-
+          The Skill-Inject repository describes a benchmark for testing whether
+          adversarial instructions embedded in skill files can cause unintended
+          agent actions across contextual and obvious injections, multiple
+          skills, and policy conditions.
+        supporting_passage: >-
+          "SKILL-INJECT tests whether adversarial instructions embedded in
+          these skill files can cause agents to execute unintended actions."
+          The README describes 41 contextual injections, 30 obvious injections,
+          44 skill definitions, and 3 safety policy conditions.
+        location: "Repository README, overview and benchmark contents"
+        confidence: medium
+        limitations: "Repository was not run; benchmark numbers are README-level."
+      - id: claim_skillinject_repo_002
+        claim: >-
+          The Skill-Inject repository documents a sandboxed experimental
+          pipeline that builds sandboxes, runs agents in Docker, and evaluates
+          results.
+        supporting_passage: >-
+          The README pipeline describes "build sandboxes → run agents in Docker
+          → evaluate results."
+        location: "Repository README, pipeline"
+        confidence: medium
+        limitations: "Supports sandboxed evaluation pattern, not a complete CAK gate."
+    counterclaims:
+      - "Security benchmark infrastructure does not decide the shape of a general skill abstraction."
+    extracted_patterns:
+      - pattern_id: pattern_skill_injection_benchmark_repo
+        pattern: "sandboxed prompt-injection benchmark for skill files"
+        what_to_copy: "Use controlled sandboxes when testing hostile skill behavior."
+        what_not_to_copy: "Do not equate benchmark pass/fail with production admission."
+        agent_native_adaptation: "Add hostile-skill traces to admission experiments."
+        risk: "Benchmark tasks can underrepresent real repository-context attacks."
+    notes: "README-level repository inspection only; repository was cloned but not run."
+
+  - id: src_promptinject_agent_skills_repo
+    title: "Prompt injection agent-skills research repository"
+    url: "https://github.com/aisa-group/promptinject-agent-skills"
+    type: security
+    primary: true
+    inspected: true
+    inspected_by: codex
+    date_accessed: "2026-06-23"
+    relevance: "Repository artifact for poisoned Agent Skills replication material."
+    reliability: medium
+    claims:
+      - id: claim_promptinject_repo_001
+        claim: >-
+          The repository warns that its skill materials are prompt-injection
+          research artifacts, not normal skills, and should be handled with
+          extreme caution.
+        supporting_passage: >-
+          "This repository contains research materials related to prompt
+          injection techniques. These are NOT normal skills and should be used
+          with extreme caution!"
+        location: "Repository README, warning"
+        confidence: medium
+        limitations: "Warning supports risk awareness, not attack prevalence."
+      - id: claim_promptinject_repo_002
+        claim: >-
+          The repository includes poisoned `.claude/skills` examples and
+          replication instructions that depend on loading a poisoned skill.
+        supporting_passage: >-
+          The README says `.claude/skills` contains two poisoned skills and the
+          examples require loading a poisoned skill and ensuring it is loaded.
+        location: "Repository README, replication materials"
+        confidence: medium
+        limitations: "Repository was not executed; only file layout and README instructions were inspected."
+    counterclaims:
+      - "Poisoned-skill replication material does not quantify risk by itself."
+    extracted_patterns:
+      - pattern_id: pattern_poisoned_skill_replication_repo
+        pattern: "poisoned skill package replication artifact"
+        what_to_copy: "Treat hostile example packages as fixtures for admission tests."
+        what_not_to_copy: "Do not import or execute poisoned skills outside a controlled sandbox."
+        agent_native_adaptation: "Use known poisoned fixtures to test package/static/runtime gates."
+        risk: "Accidental loading of hostile skills during research."
+    notes: "README-level repository inspection only; repository was cloned but not run."
 
   - id: lead_agent_skills_sok
     title: "SoK: Agentic Skills -- Beyond Tool Use in LLM Agents"
@@ -970,52 +1417,52 @@ sources:
 
 claim_matrix:
   - claim_id: C1
-    supported_by: [claim_hasp_001]
+    supported_by: [claim_hasp_003, claim_hasp_004, claim_hasp_005]
     challenged_by: []
     confidence: medium
     used_in_rdr: false
   - claim_id: C2
-    supported_by: [claim_awm_001, claim_awm_002, claim_hmt_001]
-    challenged_by: [claim_hmt_001]
+    supported_by: [claim_awm_003, claim_awm_004, claim_hmt_001, claim_hmt_003, claim_hmt_004]
+    challenged_by: [claim_awm_002]
     confidence: medium
     used_in_rdr: false
   - claim_id: C3
-    supported_by: [claim_voyager_001, claim_voyager_002]
-    challenged_by: [claim_skillinject_001, claim_skillject_001]
+    supported_by: [claim_voyager_003, claim_voyager_002, claim_voyager_repo_002]
+    challenged_by: [claim_voyager_004, claim_skillinject_001, claim_skillject_003]
     confidence: medium
     used_in_rdr: false
   - claim_id: C4
-    supported_by: [claim_agent_skills_001, claim_agent_skills_002, claim_hasp_001, claim_vaso_002]
+    supported_by: [claim_agent_skills_001, claim_agent_skills_002, claim_hasp_003, claim_vaso_002, claim_skilljuror_repo_002]
     challenged_by: []
     confidence: medium
     used_in_rdr: false
   - claim_id: C5
     supported_by: [claim_vaso_001, claim_vaso_002, claim_vaso_003]
-    challenged_by: []
+    challenged_by: [claim_vaso_004]
     confidence: medium
     used_in_rdr: false
   - claim_id: C6
-    supported_by: [claim_psn_001, claim_psn_002, claim_skillwiki_001, claim_skillwiki_002, claim_skillreducer_001]
+    supported_by: [claim_psn_003, claim_psn_004, claim_skillwiki_repo_001, claim_skillwiki_repo_002, claim_skillreducer_001]
     challenged_by: []
     confidence: medium
     used_in_rdr: false
   - claim_id: C7
-    supported_by: [claim_hmt_001, claim_hmt_002]
-    challenged_by: [claim_awm_002]
+    supported_by: [claim_hmt_002, claim_hmt_003]
+    challenged_by: [claim_hmt_004, claim_awm_002]
     confidence: medium
     used_in_rdr: false
   - claim_id: C8
-    supported_by: [claim_skillrevise_002, claim_vaso_003]
-    challenged_by: []
+    supported_by: [claim_skillrevise_003, claim_skillrevise_002]
+    challenged_by: [claim_skillrevise_004]
     confidence: medium
     used_in_rdr: false
   - claim_id: C9
-    supported_by: [claim_agent_skills_003, claim_skillinject_001, claim_skillject_001, claim_malskillbench_001]
-    challenged_by: [claim_repo_context_001]
+    supported_by: [claim_agent_skills_003, claim_skillinject_001, claim_skillject_003, claim_malskillbench_002, claim_promptinject_repo_001, claim_skillinject_repo_001]
+    challenged_by: [claim_repo_context_003]
     confidence: medium
     used_in_rdr: false
   - claim_id: C10
-    supported_by: [claim_agent_skills_001, claim_hasp_001, claim_vaso_002, claim_skillwiki_001, claim_malskillbench_001]
+    supported_by: [claim_agent_skills_001, claim_hasp_003, claim_vaso_002, claim_skillwiki_repo_001, claim_malskillbench_002, claim_skillrevise_003]
     challenged_by: []
     confidence: low
     used_in_rdr: false

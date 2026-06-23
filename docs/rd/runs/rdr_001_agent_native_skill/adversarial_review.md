@@ -2,6 +2,17 @@
 
 Status: exploratory red-team review. This does not decide RDR-001.
 
+## Evidence audit update
+
+This review reflects a targeted evidence-audit pass, not a final source audit.
+The top-six papers (HASP, AWM, Voyager, VASO, PSN, HMT) now have targeted
+full-paper inspection for the claims used in `claim_matrix.md`. Voyager,
+SkillWiki, SkillJuror, Skill-Inject, and prompt-injection agent-skills
+repositories have README-level implementation/source inspection.
+
+No implementation was run or reproduced. The packet remains exploratory and
+not decision-ready.
+
 ## Assumption 1: Skill as compiled bridge is not overengineering
 
 The compiled-bridge hypothesis may be too complex for CAK's current stage. It
@@ -39,7 +50,9 @@ behavior without inventing a new compiled artifact model.
 The strongest simple path is: adopt a package shell, add strict tests,
 provenance, and a deny-by-default execution policy, then defer Runtime IR until
 there are enough failures. This may be cheaper than designing bridge semantics
-upfront.
+upfront. This pass did not find a direct source-ledgered counterexample where
+package + tests beats PF/contract/stage/hybrid approaches on the same traces,
+so the simple path is still plausible but not proven.
 
 ## Assumption 4: ContractSpec should become proof-carrying
 
@@ -52,7 +65,8 @@ Proof-carrying ContractSpec could create false confidence if the proof is over
 the wrong abstraction. A contract that verifies a simplified state model may
 still permit harmful action in the real tool environment. ContractSpec should
 remain a candidate verifier facet until CAK has concrete traces where proof
-obligations add value.
+obligations add value. VASO's own grounding limitation is a source-ledgered
+warning: wrong proposition mapping can produce false safety guarantees.
 
 ## Assumption 5: StageGraph is needed
 
@@ -62,7 +76,9 @@ if its early workflows are short, API-shaped, or already guarded by tests.
 
 StageGraph also depends on observable preconditions/postconditions. If CAK
 cannot observe the state needed to validate a stage, StageGraph becomes a more
-formal-looking workflow with the same activation errors.
+formal-looking workflow with the same activation errors. HMT improves over flat
+memory in its inspected setting, but it still reports ambiguous grounding and
+subtle state-transition failures.
 
 ## Assumption 6: SkillGraph is needed
 
@@ -74,7 +90,9 @@ volume for graph structure to matter.
 The strongest reason to add SkillGraph later is library pollution. But the
 first RDR should not assume that CAK will have uncontrolled self-evolving skill
 volume. The minimal experiment should compare flat quarantine to lifecycle
-graph mechanics before adopting graph language.
+graph mechanics before adopting graph language. PSN provides source-ledgered
+pressure for maturity gating and rollback, but it does not prove CAK needs a
+general lifecycle graph while the skill set is small.
 
 ## Assumption 7: security/admission should be designed early
 
@@ -87,7 +105,10 @@ The opposing risk is that skills mix instructions, code, resources, and tool
 authority. SkillInject, SkillJect, MalSkillBench, repository-context analyses,
 and the Agent Skills docs make it hard to justify importing untrusted active or
 executable skills without at least a minimal admission boundary. The open
-question is how small that boundary can be.
+question is how small that boundary can be. SkillJect and MalSkillBench
+strengthen the case for cross-file and runtime-aware review; repository-context
+analysis cautions that scanner outputs should still be treated as risk signals,
+not ground-truth labels.
 
 ## Strongest objections
 
@@ -102,10 +123,11 @@ question is how small that boundary can be.
 
 ## Missing evidence
 
-- Full-paper inspection for HASP, AWM, Voyager, VASO, PSN, HMT, SkillWiki,
-  SkillRevise, SkillJuror, SkillReducer, and the security papers.
-- Implementation repo inspection for Voyager, SkillWiki, SkillJuror, and any
-  available skill-security datasets.
+- Reproducible implementation runs for Voyager, SkillWiki, SkillJuror, and
+  skill-security datasets.
+- Full-paper inspection for SkillWiki, SkillJuror, SkillReducer, and security
+  papers beyond the targeted sections already captured.
+- Neutral Agent Skills host/spec behavior differences across runtimes.
 - Negative results where package+tests beats richer runtime intervention.
 - Concrete CAK failure traces that require active intervention or typed
   pre/postconditions.

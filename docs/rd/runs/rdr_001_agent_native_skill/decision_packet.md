@@ -27,6 +27,11 @@ The current supported claims are exactly the claims listed in
 - C10: A compiled bridge between Evidence IR and Runtime IR may better explain
   the combined requirements than any single skill format.
 
+The top-six paper anchors now have targeted full-paper inspection for the
+listed claims. Voyager, SkillWiki, SkillJuror, Skill-Inject, and
+prompt-injection agent-skills repositories have README-level implementation
+inspection only.
+
 ## Current unsupported claims
 
 - CAK should standardize SkillPack now.
@@ -36,10 +41,13 @@ The current supported claims are exactly the claims listed in
 - StageGraph should replace every workflow representation.
 - SkillGraph governance is mandatory before any skill experiment.
 - The compiled-bridge hypothesis is better than package + tests.
-- Source-ledgered abstracts are enough for a final RDR.
+- Source-ledgered evidence audit is complete.
 - Security/admission design is complete.
 - Older planning/cognitive-architecture references support the current
   hypothesis.
+- Package + tests is sufficient for CAK skill interoperability.
+- README-level repository inspection is enough to validate implementation
+  behavior.
 
 ## Open unknowns
 
@@ -61,14 +69,17 @@ Decision-ready status: not decision-ready.
 
 Using `docs/rd/research_quality_gate.md`, this run remains exploratory because:
 
-- more full-paper and implementation-source inspection is needed;
 - adversarial debate is planned but not run;
-- evidence audit is not complete;
 - minimal experiment is described but not implemented;
 - counterevidence is incomplete;
+- no CAK trace corpus exists for experiments A/B/C;
+- implementation repositories were inspected only at README level and were not
+  run or reproduced;
+- top-six papers were inspected for targeted claims but not reproduced;
+- full-paper/security audit beyond targeted sections is incomplete;
 - older planning/cognitive architecture sources are uninspected leads;
-- security references are partially inspected but not fully audited;
-- claims are mostly abstract-level and should not decide architecture.
+- direct package+tests counterexample evidence was not found or validated;
+- security/admission remains a research direction, not a complete design.
 
 ## Minimal experiment candidates
 
@@ -99,4 +110,5 @@ Experiment C: same workflow encoded as:
 
 ## Recommended next step
 
-Run evidence audit and structured debate before writing final RDR-001.
+Run structured debate using the updated source ledger, then choose a minimal
+CAK trace corpus for experiments A/B/C. Do not write final RDR-001 yet.
