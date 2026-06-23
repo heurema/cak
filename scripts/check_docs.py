@@ -36,6 +36,7 @@ required = [
     "docs/rd/debate_protocol.md",
     "docs/rd/research_quality_gate.md",
     "docs/rd/pattern_references.md",
+    "docs/rd/03_skill_architecture_synthesis.md",
     "docs/rd/runs/README.md",
     "docs/rd/rdr_template.md",
     "docs/rd/01_research_questions.md",
