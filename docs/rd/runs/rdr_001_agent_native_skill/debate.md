@@ -207,6 +207,37 @@ Artifact update required:
 
 The debate strengthens the draft packet but does not make it decision-ready.
 
+## Lightweight trace-plan review
+
+Review status: run after `trace_corpus_plan.md` was added.
+
+Roles:
+
+- Skeptic: checked whether the trace plan actually distinguishes package, PF,
+  ContractSpec, StageGraph, SkillGraph, and compiled bridge hypotheses.
+- Evaluator: checked scoring, comparison arms, acceptance criteria, and
+  readiness gates.
+
+Review verdict: modify / keep draft.
+
+Findings:
+
+- Candidate traces mostly compare subsets of arms; same-trace claims for
+  Experiment A and Experiment C are not yet sufficient.
+- T2 needs separate PF fire, no-fire/overblock, and context-only-vs-override
+  cases.
+- T5 needs separate ContractSpec false-confidence and evidence/provenance
+  diagnosis cases.
+- T6 needs package + tests and compiled bridge arms before it can support
+  Experiment C.
+- T7 over-favors lifecycle governance unless a flat quarantine + regression
+  tests counterexample is added.
+- Scoring needs per-trace observable artifacts, thresholds, and kill/support
+  outcomes before the corpus can be accepted.
+- C10 remains correctly hypothesis-level, but the trace plan needs an explicit
+  kill rule: compiled bridge loses if package + tests + provenance +
+  deny-by-default matches behavior, safety, and auditability at lower effort.
+
 Current verdict:
 
 - Research packet: yes.
