@@ -21,6 +21,7 @@ Start here:
 - [Debate Protocol](debate_protocol.md)
 - [Research Quality Gate](research_quality_gate.md)
 - [Pattern References](pattern_references.md)
+- [Skill Architecture Deep Research Synthesis](03_skill_architecture_synthesis.md)
 - [Research Runs](runs/README.md)
 - [Research Decision Record template](rdr_template.md)
 - [Research Question Map](01_research_questions.md)
@@ -36,3 +37,7 @@ and recorded in a source ledger.
 
 Research runs should search for stronger analogues beyond the seed list. The
 seed references are starting points, not a boundary around the research space.
+
+The skill architecture synthesis captures the current working hypothesis that
+agent-native skills may be compiled bridges between evidence/provenance IR and
+runtime-control IR. It is a synthesis note, not a decision-grade RDR.
