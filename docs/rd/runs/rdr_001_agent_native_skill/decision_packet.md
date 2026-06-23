@@ -74,8 +74,9 @@ Decision-ready status: not decision-ready.
 
 Using `docs/rd/research_quality_gate.md`, this run remains exploratory because:
 
-- structured debate has been run only as a single-operator structured pass, not
-  as an independent multi-agent or reviewer panel;
+- structured debate has been run as a single-operator structured pass, and a
+  lightweight two-role Skeptic/Evaluator review has been run, but no full
+  independent reviewer panel has accepted the trace corpus;
 - minimal experiment is described but not implemented;
 - counterevidence is incomplete;
 - `trace_corpus_plan.md` proposes a corpus, but no CAK trace corpus has been
@@ -87,6 +88,39 @@ Using `docs/rd/research_quality_gate.md`, this run remains exploratory because:
 - older planning/cognitive architecture sources are uninspected leads;
 - direct package+tests counterexample evidence was not found or validated;
 - security/admission remains a research direction, not a complete design.
+
+## Draft PR readiness gate
+
+PR #10 can become ready for review as an exploratory research packet only after
+`trace_corpus_plan.md` is judged sufficient for experiment design. That means:
+
+- package + tests is treated as a serious baseline;
+- every central hypothesis H1-H7 has at least one support path and one kill or
+  weakening path;
+- PF, ContractSpec, StageGraph, SkillGraph, and compiled-bridge traces have
+  concrete scoring oracles;
+- C10 remains marked as a hypothesis-level synthesis, not an architecture
+  decision;
+- the packet still avoids runtime, schema, SkillPack, ContractSpec, and final
+  RDR changes.
+
+Current readiness verdict: not ready.
+
+The lightweight Skeptic/Evaluator review found that the trace plan is useful but
+insufficient:
+
+- T1-T8 are candidate scenarios, not accepted fixtures;
+- scoring is not operationalized enough for pass/fail decisions;
+- Experiment A and Experiment C do not yet have enough same-trace full-baseline
+  coverage;
+- T2 must be split into PF fire, no-fire/overblock, and
+  context-injection-vs-override cases;
+- T5 must be split into ContractSpec false-confidence and evidence/provenance
+  diagnosis cases;
+- T7 needs a flat registry + quarantine + regression-test counterexample before
+  SkillGraph/lifecycle evidence is balanced;
+- C10 / compiled bridge can only win if it beats package + tests + provenance +
+  deny-by-default on the same traces at acceptable evidence cost.
 
 ## Minimal experiment candidates
 

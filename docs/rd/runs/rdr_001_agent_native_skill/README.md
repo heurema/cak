@@ -7,8 +7,9 @@ This is not the final RDR and is not decision-ready. It uses
 hypothesis that agent-native skills may be compiled, governed bridges between
 Evidence / Provenance IR and Runtime / Control IR.
 
-The intended next step is selecting a minimal trace corpus and running
-same-trace comparisons before drafting the final RDR.
+The intended next step is resolving the trace-corpus sufficiency gaps, selecting
+a minimal trace corpus, and running same-trace comparisons before drafting the
+final RDR.
 
 Artifacts:
 
