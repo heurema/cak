@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "decision": "block",
+  "severity": "hard",
+  "reason": "Skill 'skill.resolve_entity' is stable and cannot be updated without a rollback checkpoint.",
+  "selected_evaluator": "lifecycle_gate",
+  "violations": [
+    {
+      "id": "LG2",
+      "expected": "rollback_checkpoint present",
+      "actual": "rollback_checkpoint missing",
+      "evidence_refs": [
+        "trace.880"
+      ]
+    }
+  ],
+  "repair": {
+    "kind": "supply_rollback",
+    "text": "Supply a rollback checkpoint before updating a stable or protected skill."
+  },
+  "trace": {
+    "record": true,
+    "event": "lifecycle_gate.update_blocked",
+    "tags": [
+      "lifecycle_gate",
+      "LG2",
+      "missing_rollback"
+    ]
+  }
+}
+

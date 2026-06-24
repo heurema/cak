@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "skill-graph-draft-authoritative",
+  "host": { "name": "cak-host", "mode": "plugin" },
+  "task": {
+    "kind": "activate_skill",
+    "goal": "Give the draft route-planner skill authoritative control."
+  },
+  "proposed_action": {
+    "kind": "activate_skill",
+    "skill_id": "skill.plan_route",
+    "target": "skill.plan_route",
+    "authority": "authoritative"
+  },
+  "skill": { "id": "cak.host-loader", "version": "0.1.0" },
+  "skill_graph": {
+    "nodes": [
+      {
+        "id": "skill.plan_route",
+        "kind": "workflow",
+        "version": "0.1.0",
+        "lifecycle": {
+          "maturity": "draft",
+          "health": "unknown"
+        },
+        "provenance_refs": ["trace.201"]
+      }
+    ],
+    "edges": []
+  }
+}

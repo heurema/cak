@@ -1,0 +1,21 @@
+# CAK-native descriptor for the cak-rdr-review pilot skill.
+#
+# This is the inner, runtime-facing descriptor. The outer, host-facing package
+# is SKILL.md (Agent-Skills-compatible frontmatter). Per the RDR-001 scope gate,
+# the package is a distribution shell; CAK does not treat it as admitted or
+# active. The authoritative behavior lives in the Rust runtime decision.
+id: cak.rdr-review
+version: 0.1.0
+kind: advisory_plus_verifier
+
+runtime:
+  binary: cakrt
+  command: eval
+  mode: cli
+
+trust:
+  network_required: false
+  side_effect_class: repo_docs_only
+
+lifecycle:
+  maturity: draft

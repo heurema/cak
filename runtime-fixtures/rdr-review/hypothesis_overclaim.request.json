@@ -1,0 +1,19 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "rdr-review-c10-overclaim",
+  "host": { "name": "cak-rdr-review", "mode": "ci" },
+  "task": {
+    "kind": "review_rdr_claim",
+    "goal": "Check claim discipline for the compiled-bridge hypothesis."
+  },
+  "state": {
+    "c10_status": "hypothesis_level",
+    "decision_packet_status": "exploratory"
+  },
+  "proposed_action": {
+    "kind": "claim_supported",
+    "text": "C10 (a compiled bridge between Evidence IR and Runtime IR) is a supported architecture decision.",
+    "target": "docs/rd/runs/rdr_001_agent_native_skill/claim_matrix.md"
+  },
+  "skill": { "id": "cak.rdr-review", "version": "0.1.0" }
+}

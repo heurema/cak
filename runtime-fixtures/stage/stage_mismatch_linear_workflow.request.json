@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "stage-mismatch-linear-workflow",
+  "host": { "name": "cak-host", "mode": "cli" },
+  "task": {
+    "kind": "run_workflow",
+    "goal": "Complete the resolve-place workflow."
+  },
+  "proposed_action": {
+    "kind": "complete_workflow",
+    "text": "Mark the resolve-place workflow complete.",
+    "target": "workflow.resolve_place"
+  },
+  "skill": { "id": "cak.workflow-runner", "version": "0.1.0" },
+  "stage": {
+    "intent": "resolve_place_entity",
+    "current_stage": "search",
+    "expected_stage": "verify_unique",
+    "stage_status": "mismatch"
+  }
+}

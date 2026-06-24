@@ -1,0 +1,30 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "skill-graph-stable-update-no-rollback",
+  "host": { "name": "cak-host", "mode": "plugin" },
+  "task": {
+    "kind": "update_skill",
+    "goal": "Patch the stable entity-resolver skill in place."
+  },
+  "proposed_action": {
+    "kind": "update_skill",
+    "skill_id": "skill.resolve_entity",
+    "target": "skill.resolve_entity"
+  },
+  "skill": { "id": "cak.host-loader", "version": "0.1.0" },
+  "skill_graph": {
+    "nodes": [
+      {
+        "id": "skill.resolve_entity",
+        "kind": "intervention",
+        "version": "1.2.0",
+        "lifecycle": {
+          "maturity": "stable",
+          "health": "healthy"
+        },
+        "provenance_refs": ["trace.880"]
+      }
+    ],
+    "edges": []
+  }
+}

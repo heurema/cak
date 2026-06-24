@@ -1,0 +1,20 @@
+[package]
+name = "cak-runtime-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "cakrt: thin CLI over the CAK Runtime v0 core. Reads an EvalRequest JSON file, prints a Decision."
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "cakrt"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+serde_json = { workspace = true }
+cak-runtime-core = { workspace = true }

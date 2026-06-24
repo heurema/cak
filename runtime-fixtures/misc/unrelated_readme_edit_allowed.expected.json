@@ -1,0 +1,16 @@
+{
+  "schema_version": "0.1.0",
+  "decision": "allow",
+  "severity": "info",
+  "reason": "No gate matched the proposed action.",
+  "violations": [],
+  "trace": {
+    "record": true,
+    "event": "composite.allow",
+    "tags": [
+      "composite",
+      "allow"
+    ]
+  }
+}
+

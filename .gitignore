@@ -11,3 +11,6 @@ build/
 .ruff_cache/
 __pycache__/
 .pytest_cache/
+# Rust workspace build artifacts
+/target/
+**/*.rs.bk

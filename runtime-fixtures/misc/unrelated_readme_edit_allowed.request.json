@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "misc-unrelated-readme-edit",
+  "host": { "name": "cak-host", "mode": "cli" },
+  "task": {
+    "kind": "edit_docs",
+    "goal": "Fix a typo in the project README."
+  },
+  "proposed_action": {
+    "kind": "edit_file",
+    "text": "Fix a typo in the project README introduction.",
+    "target": "README.md"
+  },
+  "skill": { "id": "cak.docs-helper", "version": "0.1.0" }
+}
