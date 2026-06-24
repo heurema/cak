@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/cak-runtime-core",
+    "crates/cak-host-adapter",
     "crates/cak-runtime-cli",
 ]
 resolver = "2"
@@ -25,3 +26,4 @@ anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 pretty_assertions = "1"
 cak-runtime-core = { path = "crates/cak-runtime-core" }
+cak-host-adapter = { path = "crates/cak-host-adapter" }

@@ -1,0 +1,18 @@
+[package]
+name = "cak-host-adapter"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CAK host adapter: maps EvalRequest proposals through the Rust runtime into host-facing outcomes."
+
+[lints]
+workspace = true
+
+[dependencies]
+serde = { workspace = true }
+cak-runtime-core = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+pretty_assertions = { workspace = true }

@@ -14,16 +14,21 @@ it does. It is implemented as a small Rust workspace inside this repository:
 ```text
 Cargo.toml                       workspace root (resolver 2, edition 2021)
 crates/cak-runtime-core/         the engine: data models + evaluators (no I/O)
+crates/cak-host-adapter/         maps runtime decisions to host-facing outcomes
 crates/cak-runtime-cli/          cakrt: a thin CLI over the core
 runtime-fixtures/                request/expected JSON pairs (the contract, executable)
 skills/cak-rdr-review/           Agent-Skills-compatible pilot host package
+skills/cak-host-adapter/         thin Python launcher for the Rust adapter
 ```
 
 ## What it is
 
 - A pure, deterministic function from a request to a decision.
 - A set of four small **evaluators** (gates) composed by priority.
-- A CLI, `cakrt`, that reads a request file and prints a decision.
+- A host adapter that maps runtime decisions to `proceed`, `deny`,
+  `inject_context`, and `needs_*` outcomes.
+- A CLI, `cakrt`, that reads request/proposal files and prints decisions or
+  host-facing outcomes.
 
 The design follows the RDR-001 working hypothesis that an agent-native skill is
 a *state/action-conditioned intervention* with an activation predicate, a
@@ -131,6 +136,9 @@ cakrt eval --request <request.json> --enforce-exit-code
 cakrt fixture-check \
   --request  runtime-fixtures/rdr-review/not_ready_merge.request.json \
   --expected runtime-fixtures/rdr-review/not_ready_merge.expected.json
+
+# Evaluate a host proposal and print a host-facing outcome:
+cakrt gate --proposal runtime-fixtures/rdr-review/pending_trace_status_blocked.request.json
 ```
 
 A host skill calls the runtime exactly the same way: it assembles an
@@ -138,6 +146,10 @@ A host skill calls the runtime exactly the same way: it assembles an
 `cakrt eval --request <path>`, and honors the returned decision. The runtime
 decision is authoritative over prose. See `skills/cak-rdr-review/SKILL.md` for
 the pilot host package.
+
+For hosts that need a pre-execution adapter, `cakrt gate --proposal <path>`
+returns a host-facing outcome. The bundled `skills/cak-host-adapter` package is
+only a Python launcher around that Rust command; it does not implement policy.
 
 ## Running the fixtures
 
