@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "skill-graph-quarantined-authority-claim",
+  "host": { "name": "cak-host", "mode": "plugin" },
+  "task": {
+    "kind": "claim_authority",
+    "goal": "Grant authority to the entity-resolver intervention skill."
+  },
+  "proposed_action": {
+    "kind": "claim_authority",
+    "skill_id": "skill.resolve_entity",
+    "target": "skill.resolve_entity",
+    "authority": "authoritative"
+  },
+  "skill": { "id": "cak.host-loader", "version": "0.1.0" },
+  "skill_graph": {
+    "nodes": [
+      {
+        "id": "skill.resolve_entity",
+        "kind": "intervention",
+        "version": "0.4.0",
+        "lifecycle": {
+          "maturity": "quarantined",
+          "health": "failed_verifier",
+          "quarantine_reason": "Failed replay on counterexample trace.123"
+        },
+        "provenance_refs": ["trace.123", "diagnosis.7"]
+      }
+    ],
+    "edges": []
+  }
+}

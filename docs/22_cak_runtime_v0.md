@@ -141,11 +141,11 @@ the pilot host package.
 
 ## Running the fixtures
 
-There are nine canonical request/expected pairs in `runtime-fixtures/`, one or
+There are 15 canonical request/expected pairs in `runtime-fixtures/`, one or
 more per evaluator plus an allow control. They are the executable contract.
 
 ```sh
-# Build and run the whole Rust test suite (includes a fixture-check over all 9):
+# Build and run the whole Rust test suite (includes a fixture-check over all 15):
 cargo test --workspace
 
 # Or check a single fixture pair with the CLI:
@@ -195,7 +195,7 @@ Summary
 - Adds a host-neutral Rust decision engine: EvalRequest -> Decision.
 - Two crates: cak-runtime-core (pure, no I/O) and cak-runtime-cli (cakrt).
 - Four evaluators (lifecycle, stage, proof, rdr-review) composed by priority.
-- Nine request/expected fixtures as the executable contract.
+- 15 request/expected fixtures as the executable contract.
 - Agent-Skills-compatible pilot package skills/cak-rdr-review.
 
 Boundary and non-goals
@@ -213,6 +213,6 @@ Exit-code decision
 Verification
 - cargo fmt --check
 - cargo clippy --workspace --all-targets -- -D warnings
-- cargo test --workspace  (all 9 fixtures pass)
+- cargo test --workspace  (all 15 fixtures pass)
 - python3 scripts/check_docs.py and python3 -m pytest still pass.
 ```

@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "decision": "block",
+  "severity": "hard",
+  "reason": "Trace corpus plan is not sufficient.",
+  "selected_evaluator": "rdr_review",
+  "violations": [
+    {
+      "id": "RR3",
+      "expected": "sufficient|pass",
+      "actual": "pending",
+      "evidence_refs": []
+    }
+  ],
+  "repair": {
+    "kind": "none",
+    "text": "Strengthen the trace corpus plan before accepting it as evidence."
+  },
+  "trace": {
+    "record": true,
+    "event": "rdr_review.trace_corpus_blocked",
+    "tags": [
+      "rdr_review",
+      "RR3",
+      "pending"
+    ]
+  }
+}

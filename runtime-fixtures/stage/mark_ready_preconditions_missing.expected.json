@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "decision": "ask",
+  "severity": "soft",
+  "reason": "Stage preconditions are not satisfied yet.",
+  "selected_evaluator": "stage_gate",
+  "violations": [
+    {
+      "id": "SG2",
+      "expected": "preconditions satisfied",
+      "actual": "preconditions_missing",
+      "evidence_refs": []
+    }
+  ],
+  "repair": {
+    "kind": "request_confirmation",
+    "text": "Satisfy the stage preconditions or confirm before proceeding."
+  },
+  "trace": {
+    "record": true,
+    "event": "stage_gate.preconditions_ask",
+    "tags": [
+      "stage_gate",
+      "SG2",
+      "preconditions_missing"
+    ]
+  }
+}

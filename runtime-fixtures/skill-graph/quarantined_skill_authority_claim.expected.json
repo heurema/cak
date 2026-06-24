@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "decision": "block",
+  "severity": "hard",
+  "reason": "Skill 'skill.resolve_entity' is quarantined and must not claim authoritative control.",
+  "selected_evaluator": "lifecycle_gate",
+  "violations": [
+    {
+      "id": "LG4",
+      "expected": "stable|candidate authority claim",
+      "actual": "claim_authority + quarantined",
+      "evidence_refs": ["trace.123", "diagnosis.7"]
+    }
+  ],
+  "repair": {
+    "kind": "none",
+    "text": "Do not grant authority to a quarantined or deprecated skill."
+  },
+  "trace": {
+    "record": true,
+    "event": "lifecycle_gate.authority_blocked",
+    "tags": [
+      "lifecycle_gate",
+      "LG4",
+      "quarantined"
+    ]
+  }
+}

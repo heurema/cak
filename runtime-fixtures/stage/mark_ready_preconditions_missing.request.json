@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "stage-mark-ready-preconditions-missing",
+  "host": { "name": "cak-host", "mode": "cli" },
+  "task": {
+    "kind": "run_workflow",
+    "goal": "Mark the workflow ready once all stage preconditions are met."
+  },
+  "proposed_action": {
+    "kind": "mark_ready",
+    "text": "Mark the workflow ready.",
+    "target": "workflow.resolve_place"
+  },
+  "skill": { "id": "workflow.runner", "version": "0.1.0" },
+  "stage": {
+    "intent": "resolve_place_entity",
+    "current_stage": "verify_unique",
+    "expected_stage": "verify_unique",
+    "stage_status": "preconditions_missing"
+  }
+}

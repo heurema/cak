@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "decision": "block",
+  "severity": "hard",
+  "reason": "Text asserts verification even though the verifier failed.",
+  "selected_evaluator": "proof_gate",
+  "violations": [
+    {
+      "id": "PG4",
+      "expected": "verifier_status=passed",
+      "actual": "failed",
+      "evidence_refs": ["cx.1"]
+    }
+  ],
+  "repair": {
+    "kind": "run_verifier",
+    "text": "Do not claim support after a failed verifier; resolve the counterexamples first."
+  },
+  "trace": {
+    "record": true,
+    "event": "proof_gate.failed_text_claim_blocked",
+    "tags": [
+      "proof_gate",
+      "PG4",
+      "failed"
+    ]
+  }
+}
