@@ -6,7 +6,7 @@ description: Review CAK R&D PRs and research packets for unsupported claims, ove
 # CAK RDR Review
 
 This skill gates CAK research-and-development pull requests and research packets
-through the **CAK Runtime v0** decision engine (`cakrt`). It is the pilot host
+through the **CAK Runtime v0** decision engine (`cak`). It is the pilot host
 package for that runtime.
 
 ## When to use
@@ -32,7 +32,7 @@ encoding them into an `EvalRequest` JSON document.
 The contract is:
 
 ```text
-EvalRequest (JSON)  ->  cakrt eval  ->  Decision (JSON)
+EvalRequest (JSON)  ->  cak eval  ->  Decision (JSON)
 ```
 
 The host agent should:
@@ -42,12 +42,12 @@ The host agent should:
 2. Run the runtime:
 
    ```sh
-   cakrt eval --request <path-to-request.json>
+   cak eval --request <path-to-request.json>
    ```
 
 3. Read the `Decision` from stdout and honor it.
 
-By default `cakrt eval` exits `0` for **any** valid decision, including `block`
+By default `cak eval` exits `0` for **any** valid decision, including `block`
 — `block` is a domain verdict, not a process failure. Pass `--enforce-exit-code`
 to make a `block` decision exit `2` (useful as a CI gate).
 
@@ -128,7 +128,7 @@ or `pass` — *"Trace corpus plan is not sufficient."*
 Worked request/expected pairs live in `runtime-fixtures/`. Verify any of them:
 
 ```sh
-cakrt fixture-check \
+cak fixture-check \
   --request runtime-fixtures/rdr-review/not_ready_merge.request.json \
   --expected runtime-fixtures/rdr-review/not_ready_merge.expected.json
 ```

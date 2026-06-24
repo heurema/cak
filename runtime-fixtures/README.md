@@ -6,7 +6,7 @@ Each pair is a request and the exact decision the engine must produce:
 
 ```text
 <category>/<name>.request.json   -> an EvalRequest
-<category>/<name>.expected.json  -> the Decision cakrt must return
+<category>/<name>.expected.json  -> the Decision cak must return
 ```
 
 The Rust test suite (`cargo test --workspace`) evaluates every request and
@@ -41,4 +41,4 @@ cargo run -p cak-runtime-cli -- fixture-check \
 
 Expected files are generated from the engine and committed as the regression
 baseline. If you change rule behavior intentionally, regenerate the affected
-`*.expected.json` with `cakrt eval` and review the diff.
+`*.expected.json` with `cak eval` and review the diff.

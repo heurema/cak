@@ -9,7 +9,7 @@ This skill is a thin launcher for the Rust host adapter. It does not implement
 policy logic in Python. The script calls:
 
 ```sh
-cakrt gate --proposal <proposal.json>
+cak gate --proposal <proposal.json>
 ```
 
 The proposal JSON currently uses the same shape as `EvalRequest`; the Rust

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Thin Python launcher for `cakrt gate`.
+"""Thin Python launcher for `cak gate`.
 
 The policy decision stays in Rust. This script exists so Agent-Skills-style
-hosts that expect a Python script can invoke the canonical CAK adapter binary.
+hosts that expect a Python script can invoke the canonical CAK CLI.
 """
 
 from __future__ import annotations
@@ -14,9 +14,12 @@ from pathlib import Path
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the CAK Rust host adapter gate.")
+    parser = argparse.ArgumentParser(
+        description="Run the CAK Rust host adapter gate.",
+        allow_abbrev=False,
+    )
     parser.add_argument("--proposal", required=True, type=Path, help="Path to proposal JSON.")
-    parser.add_argument("--cakrt", default="cakrt", help="Path to the cakrt binary.")
+    parser.add_argument("--cak", default="cak", help="Path to the cak binary.")
     parser.add_argument(
         "--enforce-exit-code",
         action="store_true",
@@ -27,7 +30,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    command = [args.cakrt, "gate", "--proposal", str(args.proposal)]
+    command = [args.cak, "gate", "--proposal", str(args.proposal)]
     if args.enforce_exit_code:
         command.append("--enforce-exit-code")
 

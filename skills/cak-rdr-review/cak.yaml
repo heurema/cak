@@ -9,7 +9,7 @@ version: 0.1.0
 kind: advisory_plus_verifier
 
 runtime:
-  binary: cakrt
+  binary: cak
   command: eval
   mode: cli
 

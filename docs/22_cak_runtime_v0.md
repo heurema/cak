@@ -15,7 +15,7 @@ it does. It is implemented as a small Rust workspace inside this repository:
 Cargo.toml                       workspace root (resolver 2, edition 2021)
 crates/cak-runtime-core/         the engine: data models + evaluators (no I/O)
 crates/cak-host-adapter/         maps runtime decisions to host-facing outcomes
-crates/cak-runtime-cli/          cakrt: a thin CLI over the core
+crates/cak-runtime-cli/          cak: the public CLI over the core
 runtime-fixtures/                request/expected JSON pairs (the contract, executable)
 skills/cak-rdr-review/           Agent-Skills-compatible pilot host package
 skills/cak-host-adapter/         thin Python launcher for the Rust adapter
@@ -27,7 +27,7 @@ skills/cak-host-adapter/         thin Python launcher for the Rust adapter
 - A set of four small **evaluators** (gates) composed by priority.
 - A host adapter that maps runtime decisions to `proceed`, `deny`,
   `inject_context`, and `needs_*` outcomes.
-- A CLI, `cakrt`, that reads request/proposal files and prints decisions or
+- A CLI, `cak`, that reads request/proposal files and prints decisions or
   host-facing outcomes.
 
 The design follows the RDR-001 working hypothesis that an agent-native skill is
@@ -112,7 +112,7 @@ matches, the composite returns a neutral `allow`.
 
 ## Exit-code policy
 
-`cakrt eval` distinguishes a **domain decision** from a **process error**:
+`cak eval` distinguishes a **domain decision** from a **process error**:
 
 - exit `0` for any valid decision by default — including `block`;
 - exit `1` only for invalid input or a runtime error (missing file, bad JSON, a
@@ -127,27 +127,27 @@ failure when it opts in with `--enforce-exit-code`.
 
 ```sh
 # Evaluate a request and print the decision (exit 0 even for block):
-cakrt eval --request runtime-fixtures/rdr-review/not_ready_merge.request.json
+cak eval --request runtime-fixtures/rdr-review/not_ready_merge.request.json
 
 # Same, but a block decision exits 2 (CI gate mode):
-cakrt eval --request <request.json> --enforce-exit-code
+cak eval --request <request.json> --enforce-exit-code
 
 # Check a request against its expected decision fixture:
-cakrt fixture-check \
+cak fixture-check \
   --request  runtime-fixtures/rdr-review/not_ready_merge.request.json \
   --expected runtime-fixtures/rdr-review/not_ready_merge.expected.json
 
 # Evaluate a host proposal and print a host-facing outcome:
-cakrt gate --proposal runtime-fixtures/rdr-review/pending_trace_status_blocked.request.json
+cak gate --proposal runtime-fixtures/rdr-review/pending_trace_status_blocked.request.json
 ```
 
 A host skill calls the runtime exactly the same way: it assembles an
 `EvalRequest` JSON document from whatever facts it has gathered, runs
-`cakrt eval --request <path>`, and honors the returned decision. The runtime
+`cak eval --request <path>`, and honors the returned decision. The runtime
 decision is authoritative over prose. See `skills/cak-rdr-review/SKILL.md` for
 the pilot host package.
 
-For hosts that need a pre-execution adapter, `cakrt gate --proposal <path>`
+For hosts that need a pre-execution adapter, `cak gate --proposal <path>`
 returns a host-facing outcome. The bundled `skills/cak-host-adapter` package is
 only a Python launcher around that Rust command; it does not implement policy.
 
@@ -205,7 +205,7 @@ Title: feat(runtime): add Rust CAK runtime v0
 
 Summary
 - Adds a host-neutral Rust decision engine: EvalRequest -> Decision.
-- Two crates: cak-runtime-core (pure, no I/O) and cak-runtime-cli (cakrt).
+- Two crates: cak-runtime-core (pure, no I/O) and cak-runtime-cli (binary: `cak`).
 - Four evaluators (lifecycle, stage, proof, rdr-review) composed by priority.
 - 15 request/expected fixtures as the executable contract.
 - Agent-Skills-compatible pilot package skills/cak-rdr-review.
@@ -217,7 +217,7 @@ Boundary and non-goals
   the request JSON only.
 
 Exit-code decision
-- `block` is a valid domain decision: `cakrt eval` exits 0 for any valid
+- `block` is a valid domain decision: `cak eval` exits 0 for any valid
   decision by default. It only exits non-zero for `block` when
   `--enforce-exit-code` is used (then exit 2). Exit 1 is reserved for invalid
   input or runtime error.
