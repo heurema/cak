@@ -6,16 +6,22 @@ use std::path::{Path, PathBuf};
 use cak_runtime_core::{evaluate, EvalRequest};
 use pretty_assertions::assert_eq;
 
-/// The 9 canonical request/expected fixture pairs.
+/// The 15 canonical request/expected fixture pairs.
 const FIXTURES: &[&str] = &[
     "rdr-review/not_ready_merge",
     "rdr-review/hypothesis_overclaim",
     "rdr-review/candidate_traces_overclaim",
+    "rdr-review/missing_trace_status_blocked",
+    "rdr-review/pending_trace_status_blocked",
+    "rdr-review/non_rdr_mark_ready_allowed",
     "skill-graph/quarantined_skill_activation",
     "skill-graph/stable_skill_update_without_rollback",
     "skill-graph/draft_skill_authoritative_activation",
+    "skill-graph/quarantined_skill_authority_claim",
     "stage/stage_mismatch_linear_workflow",
+    "stage/mark_ready_preconditions_missing",
     "proof/verified_claim_without_grounding",
+    "proof/failed_verifier_text_overclaim",
     "misc/unrelated_readme_edit_allowed",
 ];
 

@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "rdr-review-non-rdr-mark-ready-allowed",
+  "host": { "name": "cak-host", "mode": "ci" },
+  "task": {
+    "kind": "run_workflow",
+    "goal": "Mark a non-RDR workflow ready."
+  },
+  "proposed_action": {
+    "kind": "mark_ready",
+    "text": "Mark this workflow ready.",
+    "target": "workflow.generic"
+  },
+  "skill": { "id": "workflow.runner", "version": "0.1.0" }
+}

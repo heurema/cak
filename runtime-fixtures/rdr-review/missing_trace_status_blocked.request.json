@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "rdr-review-missing-trace-status-blocked",
+  "host": { "name": "cak-host", "mode": "ci" },
+  "task": {
+    "kind": "review_trace_corpus",
+    "goal": "Accept a trace corpus only after a positive sufficiency status."
+  },
+  "proposed_action": {
+    "kind": "accept_trace_corpus",
+    "text": "Accept the trace corpus as sufficient experiment evidence.",
+    "target": "docs/rd/runs/rdr_001_agent_native_skill/trace_corpus_plan.md"
+  },
+  "skill": { "id": "cak.rdr-review", "version": "0.1.0" }
+}

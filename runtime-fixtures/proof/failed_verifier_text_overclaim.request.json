@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "proof-failed-verifier-text-overclaim",
+  "host": { "name": "cak-host", "mode": "ci" },
+  "task": {
+    "kind": "post_comment",
+    "goal": "Post a proof summary after verifier execution."
+  },
+  "proposed_action": {
+    "kind": "post_comment",
+    "text": "This result is fully supported.",
+    "target": "pr/11"
+  },
+  "skill": { "id": "cak.verifier-gate", "version": "0.1.0" },
+  "proof": {
+    "verifier_status": "failed",
+    "grounding_status": "grounded",
+    "proof_obligations": ["o1"],
+    "counterexample_refs": ["cx.1"]
+  }
+}
