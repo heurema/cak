@@ -85,10 +85,10 @@ on its own, and so the composite priority is explicit rather than tangled.
 
 | Evaluator        | Origin            | Guards against |
 | ---------------- | ----------------- | -------------- |
-| `lifecycle_gate` | PSN / SkillWiki   | activating quarantined/deprecated skills; updating stable/protected skills without a rollback checkpoint; immature skills claiming authoritative control |
+| `lifecycle_gate` | PSN / SkillWiki   | activating quarantined/deprecated skills; quarantined/deprecated skills claiming authoritative control; updating stable/protected skills without a rollback checkpoint; immature skills claiming authoritative control |
 | `stage_gate`     | HMT / AWM         | completing stage-bound actions while the workflow stage is in mismatch or its preconditions are missing |
-| `proof_gate`     | VASO              | claiming verification without a passing verifier; accepting claims with unknown/suspect grounding; prose overclaiming "verified"/"supported" with open obligations |
-| `rdr_review`     | RDR-001 domain    | recommending merge before a packet is decision-ready; overclaiming C10; accepting an insufficient trace corpus |
+| `proof_gate`     | VASO              | claiming verification without a passing verifier; accepting claims with unknown/suspect grounding; prose overclaiming "verified"/"supported" with open obligations or a failed verifier |
+| `rdr_review`     | RDR-001 domain    | recommending merge before an RDR packet is decision-ready; overclaiming C10; accepting a trace corpus without a positive `sufficient`/`pass` status |
 
 ### Composition
 

@@ -14,8 +14,8 @@ use crate::request::EvalRequest;
 /// Stable evaluator name.
 pub const NAME: &str = "rdr_review";
 
-/// Trace-plan statuses that are not sufficient to accept a trace corpus.
-const INSUFFICIENT_TRACE_STATUSES: [&str; 3] = ["candidate_only", "insufficient", "fail"];
+/// Trace-plan statuses that are sufficient to accept a trace corpus.
+const SUFFICIENT_TRACE_STATUSES: [&str; 2] = ["sufficient", "pass"];
 
 /// Gate for CAK R&D research-packet readiness and claim discipline.
 #[derive(Debug, Default, Clone, Copy)]
@@ -23,6 +23,14 @@ pub struct RdrReviewEvaluator;
 
 fn state_str<'a>(request: &'a EvalRequest, key: &str) -> Option<&'a str> {
     request.state.get(key).and_then(serde_json::Value::as_str)
+}
+
+fn is_rdr_review_scope(request: &EvalRequest) -> bool {
+    request.skill.id == "cak.rdr-review"
+        || request.task.kind.contains("rdr")
+        || request.state.get("decision_packet_status").is_some()
+        || request.state.get("c10_status").is_some()
+        || request.state.get("trace_plan_status").is_some()
 }
 
 fn allow() -> Decision {
@@ -48,6 +56,7 @@ impl Evaluator for RdrReviewEvaluator {
         // RR1: recommending merge / marking ready while the decision packet is
         // not decision-ready is a hard block.
         if matches!(kind, "recommend_merge" | "mark_ready")
+            && is_rdr_review_scope(request)
             && state_str(request, "decision_packet_status") != Some("decision_ready")
         {
             let actual = state_str(request, "decision_packet_status")
@@ -120,41 +129,38 @@ impl Evaluator for RdrReviewEvaluator {
             };
         }
 
-        // RR3: accepting a trace corpus whose plan is not sufficient is a hard
-        // block.
-        if kind == "accept_trace_corpus" {
-            if let Some(status) = state_str(request, "trace_plan_status") {
-                if INSUFFICIENT_TRACE_STATUSES.contains(&status) {
-                    return Decision {
-                        schema_version: crate::SCHEMA_VERSION.to_string(),
-                        decision: DecisionKind::Block,
-                        severity: Severity::Hard,
-                        reason: "Trace corpus plan is not sufficient.".to_string(),
-                        selected_evaluator: Some(NAME.to_string()),
-                        violations: vec![Violation {
-                            id: "RR3".to_string(),
-                            expected: Some("sufficient|pass".to_string()),
-                            actual: Some(status.to_string()),
-                            evidence_refs: Vec::new(),
-                        }],
-                        repair: Some(Repair {
-                            kind: RepairKind::None,
-                            text:
-                                "Strengthen the trace corpus plan before accepting it as evidence."
-                                    .to_string(),
-                            replacement_action: None,
-                        }),
-                        trace: Some(TraceEvent {
-                            record: true,
-                            event: "rdr_review.trace_corpus_blocked".to_string(),
-                            tags: vec![
-                                "rdr_review".to_string(),
-                                "RR3".to_string(),
-                                status.to_string(),
-                            ],
-                        }),
-                    };
-                }
+        // RR3: accepting a trace corpus requires a positive sufficiency status.
+        if kind == "accept_trace_corpus" && is_rdr_review_scope(request) {
+            let status = state_str(request, "trace_plan_status").unwrap_or("unknown");
+            if !SUFFICIENT_TRACE_STATUSES.contains(&status) {
+                return Decision {
+                    schema_version: crate::SCHEMA_VERSION.to_string(),
+                    decision: DecisionKind::Block,
+                    severity: Severity::Hard,
+                    reason: "Trace corpus plan is not sufficient.".to_string(),
+                    selected_evaluator: Some(NAME.to_string()),
+                    violations: vec![Violation {
+                        id: "RR3".to_string(),
+                        expected: Some("sufficient|pass".to_string()),
+                        actual: Some(status.to_string()),
+                        evidence_refs: Vec::new(),
+                    }],
+                    repair: Some(Repair {
+                        kind: RepairKind::None,
+                        text: "Strengthen the trace corpus plan before accepting it as evidence."
+                            .to_string(),
+                        replacement_action: None,
+                    }),
+                    trace: Some(TraceEvent {
+                        record: true,
+                        event: "rdr_review.trace_corpus_blocked".to_string(),
+                        tags: vec![
+                            "rdr_review".to_string(),
+                            "RR3".to_string(),
+                            status.to_string(),
+                        ],
+                    }),
+                };
             }
         }
 

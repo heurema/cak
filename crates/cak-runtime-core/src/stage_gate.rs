@@ -79,9 +79,9 @@ impl Evaluator for StageGateEvaluator {
             };
         }
 
-        // SG2: completing or executing a stage-bound action while
-        // preconditions are missing needs confirmation (soft ask).
-        if matches!(kind, "complete_workflow" | "execute_stage_bound_action")
+        // SG2: executing any stage-bound action while preconditions are missing
+        // needs confirmation (soft ask).
+        if STAGE_BOUND_KINDS.contains(&kind)
             && stage.stage_status == StageStatus::PreconditionsMissing
         {
             return Decision {
