@@ -9,6 +9,47 @@ Evidence status values:
 - lead: discovered but not inspected;
 - speculative: useful hypothesis, not evidence.
 
+Runtime-control status values:
+
+runtime_control_status:
+  true_pf_like | partial | packaging_only | baseline | lead
+
+- true_pf_like: activation + state/action + loop position + executable
+  intervention are present;
+- partial: some runtime-control properties are present, but the full PF-like
+  interface is missing;
+- packaging_only: distribution package, host adapter, or script folder without
+  runtime activation/intervention semantics;
+- distribution_reference: useful for packaging/adapters, not evidence for
+  runtime-control skills;
+- executable_code_baseline: reusable executable behavior without proven
+  state/action-conditioned runtime intervention;
+- workflow_memory_baseline: procedural memory baseline, not active runtime
+  control unless compiled into a runtime hook;
+- contract_runtime_partial: verifier/contract line that can become runtime
+  control when it blocks or routes transitions;
+- lead: not inspected enough for runtime-control classification.
+
+Runtime-control status notes for current patterns:
+
+- HASP patterns P07-P10: true_pf_like.
+- Agent Skills / SKILL.md package patterns P20-P21: packaging_only /
+  distribution_reference unless a host runtime adds activation and intervention
+  semantics.
+- Voyager patterns P01-P03: executable_code_baseline.
+- AWM/HMT workflow-memory patterns P04-P06 and P18-P19:
+  workflow_memory_baseline unless tied to observable runtime pre/postcondition
+  hooks.
+- VASO/ContractSpec patterns P12-P14: contract_runtime_partial.
+- SkillGraph/lifecycle patterns P15-P17 and P22-P24: partial governance or
+  evidence support, not standalone runtime-control evidence.
+- Security patterns P25-P26: admission/security support; they do not establish
+  runtime-control semantics by themselves.
+- No Codex, Claude, or plugin pattern is currently source-ledgered as a
+  runtime-control skill in this matrix. If added later, classify it as
+  distribution_reference unless it exposes runtime activation and intervention
+  semantics.
+
 | Pattern ID | Pattern | Source(s) | What to copy | What not to copy | Agent-native adaptation | Risk | Informs RDR questions | Evidence status |
 |---|---|---|---|---|---|---|---|---|
 | P01 | executable external skill library | `src_voyager_arxiv` | Keep reusable behavior outside model weights as interpretable artifacts. | Do not assume stable Minecraft-style APIs or feedback. | Require trace/replay, permissions, sandboxing, and verifier admission. | Unsafe or brittle executable actions. | Is a skill executable code? | source-ledgered |

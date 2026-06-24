@@ -7,9 +7,13 @@ This is not the final RDR and is not decision-ready. It uses
 hypothesis that agent-native skills may be compiled, governed bridges between
 Evidence / Provenance IR and Runtime / Control IR.
 
-The intended next step is resolving the trace-corpus sufficiency gaps, selecting
-a minimal trace corpus, and running same-trace comparisons before drafting the
-final RDR.
+This run focuses on agent-native runtime-control skills. Package formats,
+SKILL.md folders, scripts, and host plugins are studied only as distribution,
+adapter, or baseline artifacts unless they expose runtime activation and
+intervention semantics.
+
+The intended next step is writing the accepted trace fixtures and running
+same-trace comparisons before drafting the final RDR.
 
 Artifacts:
 
@@ -17,6 +21,7 @@ Artifacts:
 - [source_ledger.yaml](source_ledger.yaml)
 - [pattern_matrix.md](pattern_matrix.md)
 - [claim_matrix.md](claim_matrix.md)
+- [programmatic_runtime_skill_scope.md](programmatic_runtime_skill_scope.md)
 - [hypothesis_matrix.md](hypothesis_matrix.md)
 - [adversarial_review.md](adversarial_review.md)
 - [debate.md](debate.md)

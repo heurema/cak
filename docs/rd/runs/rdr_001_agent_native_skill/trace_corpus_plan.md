@@ -62,6 +62,23 @@ Accepted traces use these arms where relevant:
 
 Omitted arms require an explicit N/A reason in the trace.
 
+## Runtime-Control Arm Requirement
+
+Each accepted trace must include at least one true Programmatic Runtime Skill
+arm:
+
+- HASP-like Program Function;
+- ContractSpec / type-error handler that can block or route a runtime
+  transition;
+- StageGraph runtime with observable pre/postconditions;
+- CAK compiled bridge with activation/intervention semantics.
+
+Package-only arms may be baselines, distribution shells, or admission inputs.
+They cannot be the only "skill" arm in an accepted trace, and they cannot be
+counted as evidence for Programmatic Runtime Skill semantics unless a runtime
+activation/intervention mechanism gives them loop position and transition
+authority.
+
 ## Accepted Fixtures
 
 ### T1 — Wrong-State Package Activation

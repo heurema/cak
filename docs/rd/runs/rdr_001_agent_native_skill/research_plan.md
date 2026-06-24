@@ -55,6 +55,26 @@ This is only a hypothesis. It is inherited from
 `docs/rd/03_skill_architecture_synthesis.md` as an input to test, not as an
 architecture decision.
 
+## Terminology guard
+
+RDR-001's focal object is a Programmatic Runtime Skill: a reusable executable
+behavior-control artifact that can observe current runtime state and proposed
+action, decide whether it should activate, and modify, block, redirect, verify,
+or repair the next agent transition.
+
+Package-only systems are baselines and distribution references. Agent Skills /
+SKILL.md packages, host plugin manifests, and script-backed folders are useful
+for portability, resources, deterministic helpers, and host adapters, but they
+do not by themselves establish runtime-control semantics.
+
+Script-backed skills are not enough unless they are tied to a runtime
+activation/intervention mechanism with a loop position, audit signal, admission
+path, and lifecycle or quarantine story.
+
+RDR-001 must not let Agent Skills packaging dominate the analysis. Use
+`programmatic_runtime_skill_scope.md` to classify evidence before citing it for
+Program Function-style or runtime-control claims.
+
 ## Scope
 
 - agent skills and procedural memory;

@@ -2,6 +2,31 @@
 
 Status: exploratory. No hypothesis is adopted.
 
+## Hypothesis layers
+
+Primary runtime-control hypotheses:
+
+- state-conditioned Program Function;
+- proof-carrying typed transition;
+- stage-aware procedural runtime;
+- compiled bridge artifact.
+
+Distribution / baseline hypotheses:
+
+- portable package;
+- script-backed helper;
+- executable code skill;
+- workflow memory.
+
+Governance hypothesis:
+
+- governed lifecycle node in SkillGraph.
+
+A hypothesis can win only for the layer it targets. A portable package may win
+the distribution layer while losing runtime semantics. A script-backed helper
+may be useful executable support while failing the Programmatic Runtime Skill
+scope gate if no runtime activation/intervention mechanism invokes it.
+
 | Hypothesis | Description | Best supporting patterns | Weaknesses | Required Runtime IR | Required Evidence IR | Required verifier support | Security/admission implications | Failure modes | Minimal experiment | Kill criteria |
 |---|---|---|---|---|---|---|---|---|---|---|
 | H1: skill = portable package | A skill is a directory/package such as `SKILL.md` plus metadata, scripts, resources, and docs. Portable packages are good distribution shells but may not control runtime behavior. | Portable SKILL.md package; progressive disclosure; skill organization evaluation. | Package import is not activation, admission, authorization, or verification. Package fields can become a vague bundle. | Package metadata loader; resource loader; optional script execution envelope. | Author/source provenance; package manifest; resource list; test evidence; security scan record. | Schema/package validation; static checks; optional tests. | Requires trust tier, source audit, resource/code review, and quarantine for untrusted packages. | Agent loads the right package but applies it in the wrong state; malicious helper scripts; stale package resources. | Import the same package under no admission, static-only, verifier-gated, and security+provenance gates. | Kill as universal definition if package form cannot predict or constrain runtime behavior on identical traces. |
