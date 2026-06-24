@@ -15,6 +15,7 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use anyhow::Context;
+use cak_host_adapter::{HostOutcomeKind, HostProposal};
 use cak_runtime_core::{DecisionKind, EvalRequest};
 use clap::{Parser, Subcommand};
 
@@ -47,6 +48,16 @@ enum Command {
         #[arg(long)]
         expected: PathBuf,
     },
+    /// Evaluate a host proposal and print a host-facing outcome as pretty JSON.
+    Gate {
+        /// Path to the host proposal JSON file.
+        #[arg(long)]
+        proposal: PathBuf,
+        /// Exit 2 when `outcome == deny` (default: exit 0 for any valid
+        /// outcome).
+        #[arg(long)]
+        enforce_exit_code: bool,
+    },
 }
 
 fn main() -> ExitCode {
@@ -67,6 +78,10 @@ fn run(cli: Cli) -> anyhow::Result<ExitCode> {
             enforce_exit_code,
         } => cmd_eval(&request, enforce_exit_code),
         Command::FixtureCheck { request, expected } => cmd_fixture_check(&request, &expected),
+        Command::Gate {
+            proposal,
+            enforce_exit_code,
+        } => cmd_gate(&proposal, enforce_exit_code),
     }
 }
 
@@ -111,6 +126,22 @@ fn cmd_fixture_check(request_path: &Path, expected_path: &Path) -> anyhow::Resul
     eprintln!("mismatch: {}", request_path.display());
     report_diff(&expected, &actual);
     Ok(ExitCode::from(1))
+}
+
+fn read_proposal(path: &Path) -> anyhow::Result<HostProposal> {
+    read_request(path).with_context(|| format!("parsing proposal file {}", path.display()))
+}
+
+fn cmd_gate(path: &Path, enforce_exit_code: bool) -> anyhow::Result<ExitCode> {
+    let proposal = read_proposal(path)?;
+    let outcome = cak_host_adapter::evaluate_proposal(&proposal);
+    println!("{}", serde_json::to_string_pretty(&outcome)?);
+
+    if enforce_exit_code && outcome.outcome == HostOutcomeKind::Deny {
+        Ok(ExitCode::from(2))
+    } else {
+        Ok(ExitCode::SUCCESS)
+    }
 }
 
 /// Print a human-readable diff between expected and actual decisions.

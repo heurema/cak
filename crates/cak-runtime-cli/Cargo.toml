@@ -18,3 +18,4 @@ anyhow = { workspace = true }
 clap = { workspace = true }
 serde_json = { workspace = true }
 cak-runtime-core = { workspace = true }
+cak-host-adapter = { workspace = true }

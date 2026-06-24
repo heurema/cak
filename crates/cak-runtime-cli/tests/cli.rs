@@ -115,3 +115,56 @@ fn fixture_check_fails_on_mismatch() {
         .expect("run cakrt");
     assert_eq!(status.code(), Some(1));
 }
+
+#[test]
+fn gate_denies_blocking_decision_by_default_with_zero_exit() {
+    let output = Command::new(BIN)
+        .arg("gate")
+        .arg("--proposal")
+        .arg(request("rdr-review/pending_trace_status_blocked"))
+        .output()
+        .expect("run cakrt gate");
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "gate must exit 0 by default for a valid deny outcome"
+    );
+
+    let outcome: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout is JSON");
+    assert_eq!(outcome["outcome"], "deny");
+    assert_eq!(outcome["decision"]["decision"], "block");
+    assert_eq!(outcome["decision"]["selected_evaluator"], "rdr_review");
+}
+
+#[test]
+fn gate_denies_blocking_decision_with_exit_two_when_enforced() {
+    let status = Command::new(BIN)
+        .arg("gate")
+        .arg("--proposal")
+        .arg(request("rdr-review/pending_trace_status_blocked"))
+        .arg("--enforce-exit-code")
+        .status()
+        .expect("run cakrt gate");
+    assert_eq!(
+        status.code(),
+        Some(2),
+        "deny must exit 2 under --enforce-exit-code"
+    );
+}
+
+#[test]
+fn gate_allows_non_rdr_mark_ready() {
+    let output = Command::new(BIN)
+        .arg("gate")
+        .arg("--proposal")
+        .arg(request("rdr-review/non_rdr_mark_ready_allowed"))
+        .output()
+        .expect("run cakrt gate");
+    assert_eq!(output.status.code(), Some(0));
+
+    let outcome: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout is JSON");
+    assert_eq!(outcome["outcome"], "proceed");
+    assert_eq!(outcome["decision"]["decision"], "allow");
+}
