@@ -8,13 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "skills" / "cak-host-adapter" / "scripts" / "cak_gate.py"
 
 
-def test_skill_shim_delegates_to_cakrt_gate(tmp_path: Path) -> None:
-    proposal = tmp_path / "proposal.json"
-    proposal.write_text('{"schema_version":"0.1.0"}', encoding="utf-8")
-    argv_path = tmp_path / "argv.json"
-
-    fake_cakrt = tmp_path / "fake-cakrt"
-    fake_cakrt.write_text(
+def write_fake_cak(path: Path, argv_path: Path) -> None:
+    path.write_text(
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -28,7 +23,44 @@ def test_skill_shim_delegates_to_cakrt_gate(tmp_path: Path) -> None:
         ),
         encoding="utf-8",
     )
-    os.chmod(fake_cakrt, 0o755)
+    os.chmod(path, 0o755)
+
+
+def test_skill_shim_delegates_to_cak_gate_from_path(tmp_path: Path) -> None:
+    proposal = tmp_path / "proposal.json"
+    proposal.write_text('{"schema_version":"0.1.0"}', encoding="utf-8")
+    argv_path = tmp_path / "argv.json"
+
+    fake_cak = tmp_path / "cak"
+    write_fake_cak(fake_cak, argv_path)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--proposal",
+            str(proposal),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PATH": f"{tmp_path}{os.pathsep}{os.environ['PATH']}"},
+    )
+
+    assert result.returncode == 0
+    assert json.loads(result.stdout)["outcome"] == "proceed"
+    argv = json.loads(argv_path.read_text(encoding="utf-8"))
+    assert Path(argv[0]).name == "cak"
+    assert argv[1:] == [
+        "gate",
+        "--proposal",
+        str(proposal),
+    ]
+
+
+def test_skill_shim_rejects_legacy_cakrt_option(tmp_path: Path) -> None:
+    proposal = tmp_path / "proposal.json"
+    proposal.write_text('{"schema_version":"0.1.0"}', encoding="utf-8")
 
     result = subprocess.run(
         [
@@ -37,18 +69,12 @@ def test_skill_shim_delegates_to_cakrt_gate(tmp_path: Path) -> None:
             "--proposal",
             str(proposal),
             "--cakrt",
-            str(fake_cakrt),
+            str(tmp_path / "cakrt"),
         ],
         check=False,
         capture_output=True,
         text=True,
     )
 
-    assert result.returncode == 0
-    assert json.loads(result.stdout)["outcome"] == "proceed"
-    assert json.loads(argv_path.read_text(encoding="utf-8")) == [
-        str(fake_cakrt),
-        "gate",
-        "--proposal",
-        str(proposal),
-    ]
+    assert result.returncode == 2
+    assert "unrecognized arguments: --cakrt" in result.stderr

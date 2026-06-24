@@ -1,4 +1,4 @@
-//! `cakrt` — a thin CLI over the CAK Runtime v0 core.
+//! `cak` — the public CLI over the CAK Runtime v0 core.
 //!
 //! The CLI does the I/O the core refuses to do (read a file, print JSON) and
 //! nothing else. It never evaluates anything itself; it hands the parsed
@@ -21,7 +21,7 @@ use clap::{Parser, Subcommand};
 
 /// CAK Runtime v0 decision engine CLI.
 #[derive(Debug, Parser)]
-#[command(name = "cakrt", version, about, long_about = None)]
+#[command(name = "cak", version, about, long_about = None)]
 struct Cli {
     #[command(subcommand)]
     command: Command,

@@ -4,13 +4,13 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "cakrt: thin CLI over the CAK Runtime v0 core. Reads an EvalRequest JSON file, prints a Decision."
+description = "cak: public CLI over the CAK Runtime v0 core. Reads EvalRequest and host proposal JSON files."
 
 [lints]
 workspace = true
 
 [[bin]]
-name = "cakrt"
+name = "cak"
 path = "src/main.rs"
 
 [dependencies]
