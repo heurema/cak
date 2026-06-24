@@ -26,6 +26,15 @@ The current supported claims are exactly the claims listed in
 - C9: External skill packages create supply-chain and prompt-injection surfaces.
 - C10: A compiled bridge between Evidence IR and Runtime IR may better explain
   the combined requirements than any single skill format.
+- C-PF-1: HASP is the strongest current anchor for Program Function-style
+  runtime skills.
+- C-PF-2: Agent Skills-style packages are packaging/distribution references,
+  not evidence of runtime-control semantics by themselves.
+- C-PF-3: Scripts inside a skill package are not programmatic runtime skills
+  unless an agent runtime activates them conditionally and gives them authority
+  over the next transition.
+- C-PF-4: For CAK, "programmable skill" should mean state/action-conditioned
+  intervention, not arbitrary executable scripts.
 
 Important: C10 is a hypothesis-level synthesis, not a supported architectural
 decision. It is included to keep the main hypothesis testable, not to adopt the
@@ -35,6 +44,24 @@ The top-six paper anchors now have targeted full-paper inspection for the
 listed claims. Voyager, SkillWiki, SkillJuror, Skill-Inject, and
 prompt-injection agent-skills repositories have README-level implementation
 inspection only.
+
+## Scope correction
+
+Current PR should remain draft until the packet clearly distinguishes
+Programmatic Runtime Skills from package/script/plugin skills.
+
+Programmatic Runtime Skill means a state/action-conditioned executable
+intervention with an activation predicate, runtime loop position, intervention
+behavior, verifier/audit signal, and admission/lifecycle constraints.
+
+Package Skill means portable instructions, resources, scripts, and metadata for
+distribution. Package skills are useful as outer shells, host adapters, and
+baselines, but package-only or script-only examples cannot support claims about
+Programmatic Runtime Skill semantics.
+
+PR #10 can become ready only when this terminology guard is integrated across
+`research_plan.md`, `hypothesis_matrix.md`, `pattern_matrix.md`,
+`claim_matrix.md`, `trace_corpus_plan.md`, and this decision packet.
 
 ## Current unsupported claims
 
