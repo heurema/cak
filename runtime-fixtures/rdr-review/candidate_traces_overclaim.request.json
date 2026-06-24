@@ -1,0 +1,16 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "rdr-review-trace-corpus-overclaim",
+  "host": { "name": "cak-rdr-review", "mode": "ci" },
+  "task": {
+    "kind": "review_trace_corpus",
+    "goal": "Decide whether the RDR-001 trace corpus plan is sufficient evidence."
+  },
+  "state": { "trace_plan_status": "candidate_only" },
+  "proposed_action": {
+    "kind": "accept_trace_corpus",
+    "text": "Accept the RDR-001 trace corpus plan as sufficient experiment evidence.",
+    "target": "docs/rd/runs/rdr_001_agent_native_skill/trace_corpus_plan.md"
+  },
+  "skill": { "id": "cak.rdr-review", "version": "0.1.0" }
+}

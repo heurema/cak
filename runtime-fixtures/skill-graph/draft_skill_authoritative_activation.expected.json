@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "decision": "ask",
+  "severity": "soft",
+  "reason": "Skill 'skill.plan_route' is draft; authoritative control needs confirmation.",
+  "selected_evaluator": "lifecycle_gate",
+  "violations": [
+    {
+      "id": "LG3",
+      "expected": "advisory or stable+authoritative",
+      "actual": "authoritative + draft",
+      "evidence_refs": [
+        "trace.201"
+      ]
+    }
+  ],
+  "repair": {
+    "kind": "request_confirmation",
+    "text": "Confirm before granting an immature skill authoritative control, or keep it advisory."
+  },
+  "trace": {
+    "record": true,
+    "event": "lifecycle_gate.authority_ask",
+    "tags": [
+      "lifecycle_gate",
+      "LG3",
+      "draft"
+    ]
+  }
+}
+

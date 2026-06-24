@@ -1,0 +1,27 @@
+[workspace]
+members = [
+    "crates/cak-runtime-core",
+    "crates/cak-runtime-cli",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/heurema/cak"
+
+# v0 keeps standard clippy only. Pedantic/nursery are intentionally NOT enabled.
+# CI runs `cargo clippy --workspace --all-targets -- -D warnings`, which turns
+# these warnings into hard errors without opting into the noisier lint groups.
+[workspace.lints.clippy]
+all = "warn"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+pretty_assertions = "1"
+cak-runtime-core = { path = "crates/cak-runtime-core" }

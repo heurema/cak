@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "proof-verified-without-grounding",
+  "host": { "name": "cak-host", "mode": "ci" },
+  "task": {
+    "kind": "accept_claim",
+    "goal": "Accept the entity-unique verification claim."
+  },
+  "proposed_action": {
+    "kind": "claim_verified",
+    "text": "The entity is verified unique against all candidates.",
+    "target": "skill.resolve_entity"
+  },
+  "skill": { "id": "cak.verifier-gate", "version": "0.1.0" },
+  "proof": {
+    "verifier_status": "passed",
+    "grounding_status": "suspect",
+    "proof_obligations": ["entity_unique_against_candidates"],
+    "counterexample_refs": []
+  }
+}

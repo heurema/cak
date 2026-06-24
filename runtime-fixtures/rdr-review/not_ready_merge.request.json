@@ -1,0 +1,16 @@
+{
+  "schema_version": "0.1.0",
+  "request_id": "rdr-review-not-ready-merge",
+  "host": { "name": "cak-rdr-review", "mode": "ci" },
+  "task": {
+    "kind": "review_rdr_pr",
+    "goal": "Decide whether RDR-001 PR can merge into main."
+  },
+  "state": { "decision_packet_status": "exploratory" },
+  "proposed_action": {
+    "kind": "recommend_merge",
+    "text": "Recommend merging the RDR-001 research packet PR into main.",
+    "target": "pr/10"
+  },
+  "skill": { "id": "cak.rdr-review", "version": "0.1.0" }
+}

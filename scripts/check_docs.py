@@ -29,6 +29,7 @@ required = [
     "docs/16_cak_failure_modes.md",
     "docs/20_v0_1_cel_policies.md",
     "docs/21_contract_type_system_skills.md",
+    "docs/22_cak_runtime_v0.md",
     "docs/rd/README.md",
     "docs/rd/00_rd_charter.md",
     "docs/rd/research_run_protocol.md",
