@@ -4,7 +4,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "skills" / "cak-host-adapter" / "scripts" / "cak_gate.py"
 
@@ -20,7 +19,10 @@ def test_skill_shim_delegates_to_cakrt_gate(tmp_path: Path) -> None:
             [
                 "#!/usr/bin/env python3",
                 "import json, pathlib, sys",
-                f"pathlib.Path({str(argv_path)!r}).write_text(json.dumps(sys.argv), encoding='utf-8')",
+                (
+                    f"pathlib.Path({str(argv_path)!r}).write_text("
+                    "json.dumps(sys.argv), encoding='utf-8')"
+                ),
                 "print(json.dumps({'schema_version':'0.1.0','outcome':'proceed'}))",
             ]
         ),
