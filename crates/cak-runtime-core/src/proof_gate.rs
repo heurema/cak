@@ -117,6 +117,42 @@ impl Evaluator for ProofGateEvaluator {
             };
         }
 
+        // PG4: prose that asserts support/verification after a failed verifier
+        // is a hard block even when the action kind is not an explicit claim.
+        if (action.text_mentions("verified") || action.text_mentions("supported"))
+            && proof.verifier_status == VerifierStatus::Failed
+        {
+            return Decision {
+                schema_version: crate::SCHEMA_VERSION.to_string(),
+                decision: DecisionKind::Block,
+                severity: Severity::Hard,
+                reason: "Text asserts verification even though the verifier failed."
+                    .to_string(),
+                selected_evaluator: Some(NAME.to_string()),
+                violations: vec![Violation {
+                    id: "PG4".to_string(),
+                    expected: Some("verifier_status=passed".to_string()),
+                    actual: Some("failed".to_string()),
+                    evidence_refs: proof.counterexample_refs.clone(),
+                }],
+                repair: Some(Repair {
+                    kind: RepairKind::RunVerifier,
+                    text: "Do not claim support after a failed verifier; resolve the counterexamples first."
+                        .to_string(),
+                    replacement_action: None,
+                }),
+                trace: Some(TraceEvent {
+                    record: true,
+                    event: "proof_gate.failed_text_claim_blocked".to_string(),
+                    tags: vec![
+                        "proof_gate".to_string(),
+                        "PG4".to_string(),
+                        "failed".to_string(),
+                    ],
+                }),
+            };
+        }
+
         // PG3: prose that asserts "verified"/"supported" while obligations
         // remain and the verifier has not run should re-verify (soft
         // verify_only). PG1 already covers the explicit claim kinds.

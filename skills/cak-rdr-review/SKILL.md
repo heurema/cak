@@ -120,7 +120,8 @@ Request (`state.trace_plan_status` is `candidate_only`):
 }
 ```
 
-Decision: `block` / `hard` — *"Trace corpus plan is not sufficient."*
+Decision: `block` / `hard` unless `state.trace_plan_status` is `sufficient`
+or `pass` — *"Trace corpus plan is not sufficient."*
 
 ## Fixtures
 

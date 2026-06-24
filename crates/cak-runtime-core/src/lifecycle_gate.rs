@@ -88,6 +88,46 @@ impl Evaluator for LifecycleGateEvaluator {
             };
         }
 
+        // LG4: a quarantined/deprecated skill must not claim authoritative
+        // control either. Activation and authority are separate host actions,
+        // but both would let an unsafe lifecycle state influence execution.
+        if action.kind == "claim_authority"
+            && matches!(maturity, Maturity::Quarantined | Maturity::Deprecated)
+        {
+            return Decision {
+                schema_version: crate::SCHEMA_VERSION.to_string(),
+                decision: DecisionKind::Block,
+                severity: Severity::Hard,
+                reason: format!(
+                    "Skill '{}' is {} and must not claim authoritative control.",
+                    node.id,
+                    maturity_label(maturity)
+                ),
+                selected_evaluator: Some(NAME.to_string()),
+                violations: vec![Violation {
+                    id: "LG4".to_string(),
+                    expected: Some("stable|candidate authority claim".to_string()),
+                    actual: Some(format!("claim_authority + {}", maturity_label(maturity))),
+                    evidence_refs: node.provenance_refs.clone(),
+                }],
+                repair: Some(Repair {
+                    kind: RepairKind::None,
+                    text: "Do not grant authority to a quarantined or deprecated skill."
+                        .to_string(),
+                    replacement_action: None,
+                }),
+                trace: Some(TraceEvent {
+                    record: true,
+                    event: "lifecycle_gate.authority_blocked".to_string(),
+                    tags: vec![
+                        "lifecycle_gate".to_string(),
+                        "LG4".to_string(),
+                        maturity_label(maturity).to_string(),
+                    ],
+                }),
+            };
+        }
+
         // LG2: updating a stable/protected skill without a rollback checkpoint
         // is a hard block.
         if action.kind == "update_skill"

@@ -97,6 +97,26 @@ fn lg3_asks_on_draft_authoritative_activation() {
 }
 
 #[test]
+fn lifecycle_blocks_quarantined_authority_claim() {
+    let req = request(json!({
+        "schema_version": "0.1.0",
+        "host": { "name": "h", "mode": "plugin" },
+        "task": { "kind": "claim_authority" },
+        "proposed_action": {
+            "kind": "claim_authority",
+            "skill_id": "skill.x",
+            "authority": "authoritative"
+        },
+        "skill": { "id": "loader" },
+        "skill_graph": skill_graph("quarantined", None)
+    }));
+    let d = LifecycleGateEvaluator.evaluate(&req);
+    assert_eq!(d.decision, DecisionKind::Block);
+    assert_eq!(d.severity, Severity::Hard);
+    assert_eq!(d.violations[0].id, "LG4");
+}
+
+#[test]
 fn lifecycle_allows_when_no_graph_or_no_match() {
     // No graph at all.
     let req = request(json!({
@@ -160,6 +180,21 @@ fn sg2_asks_on_preconditions_missing() {
         "host": { "name": "h", "mode": "cli" },
         "task": { "kind": "run_workflow" },
         "proposed_action": { "kind": "execute_stage_bound_action" },
+        "skill": { "id": "runner" },
+        "stage": { "stage_status": "preconditions_missing" }
+    }));
+    let d = StageGateEvaluator.evaluate(&req);
+    assert_eq!(d.decision, DecisionKind::Ask);
+    assert_eq!(d.violations[0].id, "SG2");
+}
+
+#[test]
+fn sg2_asks_on_mark_ready_with_preconditions_missing() {
+    let req = request(json!({
+        "schema_version": "0.1.0",
+        "host": { "name": "h", "mode": "cli" },
+        "task": { "kind": "run_workflow" },
+        "proposed_action": { "kind": "mark_ready" },
         "skill": { "id": "runner" },
         "stage": { "stage_status": "preconditions_missing" }
     }));
@@ -240,6 +275,27 @@ fn pg3_verify_only_on_text_overclaim() {
 }
 
 #[test]
+fn proof_blocks_text_overclaim_when_verifier_failed() {
+    let req = request(json!({
+        "schema_version": "0.1.0",
+        "host": { "name": "h", "mode": "ci" },
+        "task": { "kind": "post_comment" },
+        "proposed_action": { "kind": "post_comment", "text": "This result is fully supported." },
+        "skill": { "id": "gate" },
+        "proof": {
+            "verifier_status": "failed",
+            "grounding_status": "grounded",
+            "proof_obligations": ["o1"],
+            "counterexample_refs": ["cx.1"]
+        }
+    }));
+    let d = ProofGateEvaluator.evaluate(&req);
+    assert_eq!(d.decision, DecisionKind::Block);
+    assert_eq!(d.severity, Severity::Hard);
+    assert_eq!(d.violations[0].id, "PG4");
+}
+
+#[test]
 fn proof_allows_when_passed_and_grounded() {
     let req = request(json!({
         "schema_version": "0.1.0",
@@ -293,6 +349,18 @@ fn rr1_allows_merge_when_decision_ready() {
 }
 
 #[test]
+fn rr1_allows_non_rdr_mark_ready_without_packet_status() {
+    let req = request(json!({
+        "schema_version": "0.1.0",
+        "host": { "name": "h", "mode": "ci" },
+        "task": { "kind": "run_workflow" },
+        "proposed_action": { "kind": "mark_ready" },
+        "skill": { "id": "workflow.runner" }
+    }));
+    assert_allow(&RdrReviewEvaluator.evaluate(&req));
+}
+
+#[test]
 fn rr2_modifies_c10_overclaim() {
     let req = request(json!({
         "schema_version": "0.1.0",
@@ -309,7 +377,13 @@ fn rr2_modifies_c10_overclaim() {
 
 #[test]
 fn rr3_blocks_insufficient_trace_corpus() {
-    for status in ["candidate_only", "insufficient", "fail"] {
+    for status in [
+        "candidate_only",
+        "insufficient",
+        "fail",
+        "unknown",
+        "pending",
+    ] {
         let req = request(json!({
             "schema_version": "0.1.0",
             "host": { "name": "h", "mode": "ci" },
@@ -325,14 +399,31 @@ fn rr3_blocks_insufficient_trace_corpus() {
 }
 
 #[test]
-fn rr3_allows_sufficient_trace_corpus() {
+fn rr3_blocks_missing_trace_plan_status() {
     let req = request(json!({
         "schema_version": "0.1.0",
         "host": { "name": "h", "mode": "ci" },
         "task": { "kind": "review" },
-        "state": { "trace_plan_status": "pass" },
         "proposed_action": { "kind": "accept_trace_corpus" },
         "skill": { "id": "cak.rdr-review" }
     }));
-    assert_allow(&RdrReviewEvaluator.evaluate(&req));
+    let d = RdrReviewEvaluator.evaluate(&req);
+    assert_eq!(d.decision, DecisionKind::Block);
+    assert_eq!(d.violations[0].id, "RR3");
+    assert_eq!(d.violations[0].actual.as_deref(), Some("unknown"));
+}
+
+#[test]
+fn rr3_allows_sufficient_trace_corpus() {
+    for status in ["sufficient", "pass"] {
+        let req = request(json!({
+            "schema_version": "0.1.0",
+            "host": { "name": "h", "mode": "ci" },
+            "task": { "kind": "review" },
+            "state": { "trace_plan_status": status },
+            "proposed_action": { "kind": "accept_trace_corpus" },
+            "skill": { "id": "cak.rdr-review" }
+        }));
+        assert_allow(&RdrReviewEvaluator.evaluate(&req));
+    }
 }
