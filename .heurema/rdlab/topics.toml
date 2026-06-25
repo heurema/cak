@@ -1,0 +1,41 @@
+[[topics]]
+id = "rdr-001-agent-native-skill"
+title = "RDR-001: What is an agent-native skill?"
+priority = "high"
+freshness = "active-run"
+status = "active"
+
+[[topics]]
+id = "rdr-003-contractspec"
+title = "RDR-003: What is ContractSpec really?"
+priority = "high"
+freshness = "weekly"
+status = "backlog"
+
+[[topics]]
+id = "rdr-005-skill-library-pollution"
+title = "RDR-005: Skill library pollution"
+priority = "medium"
+freshness = "weekly"
+status = "backlog"
+
+[[topics]]
+id = "rdr-006-retrieval-by-state"
+title = "RDR-006: Retrieval by state, not just semantics"
+priority = "medium"
+freshness = "weekly"
+status = "backlog"
+
+[[topics]]
+id = "rdr-009-skillpack-protocol"
+title = "RDR-009: Should SkillPack become a separate protocol/project?"
+priority = "medium"
+freshness = "weekly"
+status = "backlog"
+
+[[topics]]
+id = "cak-v0-runtime-governance"
+title = "CAK v0 runtime and governance wedge"
+priority = "high"
+freshness = "weekly"
+status = "active"

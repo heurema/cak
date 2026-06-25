@@ -1,0 +1,106 @@
+run_id: cak_install_update_ux
+status: decision_ready_for_v0_direction
+inspected_at: 2026-06-24
+
+sources:
+  - id: src_cak_runtime_v0
+    title: CAK Runtime v0
+    class: internal_architecture_doc
+    url: ../../../22_cak_runtime_v0.md
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_cak_runtime_public_cli
+        claim: The current runtime surface is a host-neutral CLI over request and proposal JSON.
+        support: "The doc describes `cak eval`, `cak fixture-check`, and `cak gate` as the CLI over EvalRequest and host proposal files."
+        limitation: "It documents runtime usage, not full installation or update behavior."
+      - id: claim_cak_host_adapter_thin
+        claim: Host packages should remain thin wrappers over the canonical CLI.
+        support: "The host adapter skill is documented as a Python launcher around the Rust command, not a policy implementation."
+        limitation: "Only the CAK host adapter exists today; provider-specific adapters are not implemented."
+
+  - id: src_cak_failure_modes
+    title: CAK failure modes
+    class: internal_risk_doc
+    url: ../../../16_cak_failure_modes.md
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_signed_releases_rollback_needed
+        claim: CAK distribution must consider signed releases, dependency review, reproducible builds, and rollback.
+        support: "The failure mode table calls out supply-chain compromise and policy staging/canary/fast rollback."
+        limitation: "The doc names requirements but does not specify an installer design."
+
+  - id: src_rustup_installation
+    title: rustup installation docs
+    class: official_docs
+    url: https://raw.githubusercontent.com/rust-lang/rustup/master/doc/user-guide/src/installation/index.md
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_cli_install_path
+        claim: A CLI installer can install binaries into a user bin directory and rely on PATH checks.
+        support: "rustup installs rustc, cargo, rustup, and standard tools to Cargo's bin directory; users verify with a version command."
+        limitation: "rustup manages a full toolchain, which is heavier than CAK's v0 needs."
+      - id: claim_uninstall_command_pattern
+        claim: A self-managed CLI should have an explicit uninstall or rollback story.
+        support: "rustup documents `rustup self uninstall` as the complete removal path."
+        limitation: "Uninstall is not the same as rollback, but it establishes explicit lifecycle management."
+
+  - id: src_rustup_overrides
+    title: rustup override and toolchain file docs
+    class: official_docs
+    url: https://raw.githubusercontent.com/rust-lang/rustup/master/doc/user-guide/src/overrides.md
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_project_pin_file
+        claim: Project-local pin files are a proven pattern for preventing silent tool version drift.
+        support: "rustup documents `rust-toolchain.toml` files checked into source control for projects pinned to a specific release."
+        limitation: "Rust toolchains differ from CAK policy/runtime versions, so CAK needs its own pin semantics."
+      - id: claim_override_precedence
+        claim: CAK should define precedence between CLI flags, environment variables, project pins, and global defaults.
+        support: "rustup defines precedence across command-line shorthand, environment variable, directory override, toolchain file, and default toolchain."
+        limitation: "CAK should keep fewer layers in v0."
+
+  - id: src_uv_installation
+    title: uv installation docs
+    class: official_docs
+    url: https://docs.astral.sh/uv/getting-started/installation/
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_standalone_installer
+        claim: A standalone installer plus package-manager alternatives is a common CLI distribution shape.
+        support: "uv documents standalone installers and package-manager methods, including Homebrew, GitHub Releases, and Cargo."
+        limitation: "The CAK v0 decision only adopts the standalone shape, not every distribution channel."
+      - id: claim_versioned_install_url
+        claim: Installers should support requesting a specific version.
+        support: "uv documents including a version in the installer URL to request that version."
+        limitation: "CAK may implement a local release path before public versioned URLs exist."
+      - id: claim_inspect_script_before_use
+        claim: Shell installers should be inspectable before execution.
+        support: "uv documents inspecting the installation script with curl before running it."
+        limitation: "Inspectability does not replace signature or checksum verification."
+
+  - id: src_github_cli_install_linux
+    title: GitHub CLI Linux install docs
+    class: official_docs
+    url: https://raw.githubusercontent.com/cli/cli/trunk/docs/install_linux.md
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_signed_package_repo
+        claim: Public package-manager distribution should include signed package metadata or equivalent verification.
+        support: "GitHub CLI Linux docs publish PGP key fingerprints and checksum guidance for official package repositories."
+        limitation: "This applies to OS package repositories; CAK v0 can defer package-manager distribution."
+      - id: claim_package_manager_upgrade
+        claim: Package-manager installs should delegate update UX to the package manager.
+        support: "The GitHub CLI docs list upgrade commands such as `sudo apt install gh`, `sudo dnf update gh`, and `brew upgrade gh`."
+        limitation: "This is a later-channel concern if CAK adds package-manager formulas."
+
+leads_not_inspected_or_not_used:
+  - id: lead_cargo_dist
+    reason: "The documentation site did not load reliably in this environment; do not use it as evidence in this packet."
+  - id: lead_homebrew_formula_docs
+    reason: "Homebrew docs did not load reliably in this environment; GitHub CLI docs were used for package-manager upgrade evidence instead."

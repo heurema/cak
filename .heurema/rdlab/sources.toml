@@ -1,0 +1,243 @@
+[[sources]]
+id = "project-readme"
+type = "local_file"
+path = "README.md"
+watch = true
+mode = "internal_doc"
+trust = "A"
+
+[[sources]]
+id = "rd-charter"
+type = "local_file"
+path = "docs/rd/00_rd_charter.md"
+watch = true
+mode = "internal_doc"
+trust = "A"
+
+[[sources]]
+id = "rd-question-map"
+type = "local_file"
+path = "docs/rd/01_research_questions.md"
+watch = true
+mode = "internal_doc"
+trust = "A"
+
+[[sources]]
+id = "rd-runs-index"
+type = "local_file"
+path = "docs/rd/runs/README.md"
+watch = true
+mode = "internal_doc"
+trust = "A"
+
+[[sources]]
+id = "rdr-001-packet-readme"
+type = "local_file"
+path = "docs/rd/runs/rdr_001_agent_native_skill/README.md"
+watch = true
+mode = "research_packet"
+trust = "A"
+
+[[sources]]
+id = "rdr-001-source-ledger"
+type = "local_file"
+path = "docs/rd/runs/rdr_001_agent_native_skill/source_ledger.yaml"
+watch = true
+mode = "research_evidence"
+trust = "A"
+
+[[sources]]
+id = "cak-runtime-v0"
+type = "local_file"
+path = "docs/22_cak_runtime_v0.md"
+watch = true
+mode = "architecture_doc"
+trust = "A"
+
+[[sources]]
+id = "cak-github"
+type = "github_repo"
+url = "https://github.com/heurema/cak"
+watch = false
+mode = "code_repo"
+trust = "A"
+
+[[sources]]
+id = "agent-skills-spec"
+type = "url"
+url = "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview.md"
+watch = false
+mode = "official_docs"
+trust = "B"
+source_ledger_id = "src_agent_skills_spec"
+
+[[sources]]
+id = "arxiv-hasp-skill-programs"
+type = "url"
+url = "https://arxiv.org/abs/2605.17734"
+watch = false
+mode = "academic"
+trust = "B"
+source_ledger_id = "src_hasp_arxiv"
+
+[[sources]]
+id = "arxiv-agent-workflow-memory"
+type = "url"
+url = "https://arxiv.org/abs/2409.07429"
+watch = false
+mode = "academic"
+trust = "B"
+source_ledger_id = "src_awm_arxiv"
+
+[[sources]]
+id = "arxiv-voyager"
+type = "url"
+url = "https://arxiv.org/abs/2305.16291"
+watch = false
+mode = "academic"
+trust = "B"
+source_ledger_id = "src_voyager_arxiv"
+
+[[sources]]
+id = "arxiv-vaso"
+type = "url"
+url = "https://arxiv.org/abs/2606.05395"
+watch = false
+mode = "academic"
+trust = "B"
+source_ledger_id = "src_vaso_arxiv"
+
+[[sources]]
+id = "arxiv-programmatic-skill-networks"
+type = "url"
+url = "https://arxiv.org/abs/2601.03509"
+watch = false
+mode = "academic"
+trust = "B"
+source_ledger_id = "src_psn_arxiv"
+
+[[sources]]
+id = "arxiv-hierarchical-memory-tree"
+type = "url"
+url = "https://arxiv.org/abs/2603.07024"
+watch = false
+mode = "academic"
+trust = "B"
+source_ledger_id = "src_hmt_arxiv"
+
+[[sources]]
+id = "arxiv-skillwiki"
+type = "url"
+url = "https://arxiv.org/abs/2606.16523"
+watch = false
+mode = "academic"
+trust = "B"
+source_ledger_id = "src_skillwiki_arxiv"
+
+[[sources]]
+id = "arxiv-skillrevise"
+type = "url"
+url = "https://arxiv.org/abs/2606.01139"
+watch = false
+mode = "academic"
+trust = "B"
+source_ledger_id = "src_skillrevise_arxiv"
+
+[[sources]]
+id = "arxiv-skilljuror"
+type = "url"
+url = "https://arxiv.org/abs/2606.11543"
+watch = false
+mode = "academic"
+trust = "B"
+source_ledger_id = "src_skilljuror_arxiv"
+
+[[sources]]
+id = "arxiv-skillreducer"
+type = "url"
+url = "https://arxiv.org/abs/2603.29919"
+watch = false
+mode = "academic"
+trust = "B"
+source_ledger_id = "src_skillreducer_arxiv"
+
+[[sources]]
+id = "arxiv-skill-inject"
+type = "url"
+url = "https://arxiv.org/abs/2602.20156"
+watch = false
+mode = "security_research"
+trust = "B"
+source_ledger_id = "src_skillinject_arxiv"
+
+[[sources]]
+id = "arxiv-skillject"
+type = "url"
+url = "https://arxiv.org/abs/2602.14211"
+watch = false
+mode = "security_research"
+trust = "B"
+source_ledger_id = "src_skillject_arxiv"
+
+[[sources]]
+id = "arxiv-malskillbench"
+type = "url"
+url = "https://arxiv.org/abs/2606.07131"
+watch = false
+mode = "security_research"
+trust = "B"
+source_ledger_id = "src_malskillbench_arxiv"
+
+[[sources]]
+id = "arxiv-repo-context-skill-security"
+type = "url"
+url = "https://arxiv.org/abs/2603.16572"
+watch = false
+mode = "security_research"
+trust = "B"
+source_ledger_id = "src_repo_context_security_arxiv"
+
+[[sources]]
+id = "github-voyager"
+type = "github_repo"
+url = "https://github.com/MineDojo/Voyager"
+watch = false
+mode = "implementation_repo"
+trust = "C"
+source_ledger_id = "src_voyager_repo"
+
+[[sources]]
+id = "github-skillwiki"
+type = "github_repo"
+url = "https://github.com/Huangdingcheng/SkillWiki"
+watch = false
+mode = "implementation_repo"
+trust = "C"
+source_ledger_id = "src_skillwiki_repo"
+
+[[sources]]
+id = "github-skilljuror"
+type = "github_repo"
+url = "https://github.com/zhiyuchen-ai/skill-juror"
+watch = false
+mode = "implementation_repo"
+trust = "C"
+source_ledger_id = "src_skilljuror_repo"
+
+[[sources]]
+id = "github-skill-inject"
+type = "github_repo"
+url = "https://github.com/aisa-group/skill-inject"
+watch = false
+mode = "security_fixture_repo"
+trust = "C"
+source_ledger_id = "src_skillinject_repo"
+
+[[sources]]
+id = "github-promptinject-agent-skills"
+type = "github_repo"
+url = "https://github.com/aisa-group/promptinject-agent-skills"
+watch = false
+mode = "security_fixture_repo"
+trust = "C"
+source_ledger_id = "src_promptinject_agent_skills_repo"

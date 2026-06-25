@@ -1,0 +1,139 @@
+run_id: cak_wasm_runtime_architecture
+status: decision_ready_for_architecture_direction
+inspected_at: 2026-06-24
+
+sources:
+  - id: src_cak_runtime_v0
+    title: CAK Runtime v0
+    class: internal_architecture_doc
+    url: ../../../22_cak_runtime_v0.md
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_cak_core_pure
+        claim: CAK runtime v0 is a pure host-neutral EvalRequest -> Decision engine.
+        support: "The doc states the runtime is not an agent framework, markdown parser, GitHub client, script executor, MCP server, or harness."
+        limitation: "It describes the current v0 boundary, not future executable extension needs."
+
+  - id: src_cak_core_source
+    title: CAK runtime core source and workspace dependencies
+    class: internal_source
+    url: ../../../../crates/cak-runtime-core/src/lib.rs
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_cak_core_small_dependency_surface
+        claim: The current Rust core has a small dependency surface and no I/O capability by construction.
+        support: "The core depends on serde, serde_json, and thiserror; evaluators receive only &EvalRequest."
+        limitation: "Does not prove that future custom evaluators can stay Rust-only."
+
+  - id: src_runtime_skill_scope
+    title: Programmatic Runtime Skill Scope Gate
+    class: internal_research_guardrail
+    url: ../rdr_001_agent_native_skill/programmatic_runtime_skill_scope.md
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_packages_not_runtime_control
+        claim: Ordinary packages, scripts, and plugins are not runtime-control skills without activation, state/action access, intervention behavior, audit, verifier/admission, and lifecycle.
+        support: "The scope gate explicitly classifies package-only and script-only examples as distribution or helper artifacts unless tied to a runtime activation/intervention mechanism."
+        limitation: "The exact future runtime-control ABI remains open."
+
+  - id: src_wasmtime_intro
+    title: Wasmtime introduction
+    class: official_docs
+    url: https://raw.githubusercontent.com/bytecodealliance/wasmtime/main/docs/introduction.md
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_wasmtime_embeddable
+        claim: Wasmtime is an embeddable runtime for WebAssembly, WASI, and the Component Model.
+        support: "The introduction says Wasmtime can be used as a command-line utility or embedded as a library in a larger application."
+        limitation: "General capability; does not decide CAK architecture."
+
+  - id: src_wasmtime_security
+    title: Wasmtime security
+    class: official_docs
+    url: https://raw.githubusercontent.com/bytecodealliance/wasmtime/main/docs/security.md
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_wasm_import_export_sandbox
+        claim: WebAssembly interaction with the outside world is limited to explicit imports and exports.
+        support: "The security doc says there is no raw access to syscalls or I/O; all interaction is through interfaces explicitly linked by the host."
+        limitation: "Host configuration mistakes can still grant unsafe capabilities."
+      - id: claim_wasi_capability_filesystem
+        claim: WASI filesystem access follows a capability-based model.
+        support: "The security doc says WASI filesystem APIs ensure applications can only access files/directories they are given access to."
+        limitation: "CAK should default to no WASI for deterministic evaluator plugins."
+
+  - id: src_wasmtime_deterministic
+    title: Deterministic Wasm Execution
+    class: official_docs
+    url: https://raw.githubusercontent.com/bytecodealliance/wasmtime/main/docs/examples-deterministic-wasm-execution.md
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_wasm_determinism_not_free
+        claim: WebAssembly execution is mostly deterministic, but host imports and configuration can introduce nondeterminism.
+        support: "The doc lists nondeterministic host functions, NaN values, relaxed SIMD, memory/table growth, and interruption as determinism concerns."
+        limitation: "A carefully configured host can reduce these issues."
+
+  - id: src_wasmtime_interrupting
+    title: Interrupting Wasm Execution
+    class: official_docs
+    url: https://raw.githubusercontent.com/bytecodealliance/wasmtime/main/docs/examples-interrupting-wasm.md
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_fuel_deterministic_epoch_not
+        claim: Fuel-based interruption is deterministic but slower; epoch-based interruption is faster but nondeterministic.
+        support: "The doc states fuel interrupts the same program at the same location for the same fuel, while epochs are wall-time based and nondeterministic."
+        limitation: "Performance cost must be measured in CAK fixtures."
+
+  - id: src_component_model
+    title: WebAssembly Component Model docs
+    class: official_docs
+    url: https://raw.githubusercontent.com/bytecodealliance/component-docs/main/component-model/src/design/components.md
+    inspected: true
+    reliability: A
+    claims:
+      - id: claim_component_model_typed_interfaces
+        claim: Components are self-describing binaries that interact through typed interfaces rather than shared memory.
+        support: "Component docs describe components as self-describing and using interfaces/WIT to define imports, exports, and worlds."
+        limitation: "Adds ABI design work before CAK's custom evaluator interface is stable."
+
+  - id: src_wasi
+    title: WASI README and proposals
+    class: official_docs
+    url: https://raw.githubusercontent.com/WebAssembly/WASI/main/README.md
+    inspected: true
+    reliability: B
+    claims:
+      - id: claim_wasi_maturity_mixed
+        claim: WASI has stable and preview layers, and many APIs remain proposal-stage.
+        support: "The README describes WASI 0.2 and WASI 0.3 preview; proposals doc lists APIs across phases."
+        limitation: "Core CAK evaluator plugins may not need many WASI APIs."
+
+  - id: src_extism
+    title: Extism README and Rust PDK
+    class: official_repo_docs
+    url: https://raw.githubusercontent.com/extism/extism/main/README.md
+    inspected: true
+    reliability: B
+    claims:
+      - id: claim_extism_plugin_framework
+        claim: Extism is designed for WebAssembly plugin systems and untrusted user code.
+        support: "Extism README names extensible software/plugins and arbitrary untrusted user code as a primary use case; Rust PDK documents exported plugin functions compiled to wasm."
+        limitation: "Extism is a framework choice, not a standards decision; compare with raw Wasmtime Component Model."
+
+provider_inputs:
+  - id: provider_agy_default
+    status: used_as_critique
+    summary: "Reject core replacement; keep JSON boundary now; target WASM plugin ABI later."
+  - id: provider_claude_haiku
+    status: used_as_critique
+    summary: "Avoid WASM ABI lock-in before CAK knows what custom runtime-control skills need."
+  - id: provider_vibe_default
+    status: not_used
+    summary: "Returned stop event without substantive critique."

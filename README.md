@@ -136,6 +136,7 @@ Start with:
 Design notes beyond v0.1:
 
 - [Contract Type-System Skills](docs/21_contract_type_system_skills.md)
+- [CAK Skill Authoring v0](docs/23_cak_skill_authoring_v0.md)
 
 ## R&D mode
 
