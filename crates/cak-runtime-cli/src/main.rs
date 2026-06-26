@@ -103,6 +103,7 @@ struct SkillPackage {
     id: String,
     version: String,
     kind: String,
+    required_fixtures: Vec<PathBuf>,
 }
 
 fn main() -> ExitCode {
@@ -271,10 +272,16 @@ fn cmd_skill_install(path: &Path, host: &str, target: &Path) -> anyhow::Result<E
             install_dir.display()
         );
     }
+    if install_dir.exists() {
+        anyhow::bail!(
+            "install directory already exists: {}; remove it before install",
+            install_dir.display()
+        );
+    }
 
     std::fs::create_dir_all(&install_dir)
         .with_context(|| format!("creating install directory {}", install_dir.display()))?;
-    copy_dir_contents(path, &install_dir)?;
+    copy_dir_contents(&source_dir, &install_dir)?;
 
     let installed_at = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -286,7 +293,7 @@ fn cmd_skill_install(path: &Path, host: &str, target: &Path) -> anyhow::Result<E
         "skill_id": package.id,
         "version": package.version,
         "kind": package.kind,
-        "source_path": path.to_string_lossy(),
+        "source_path": source_dir.to_string_lossy(),
         "install_path": install_dir.to_string_lossy(),
         "installed_at_unix": installed_at,
     });
@@ -382,7 +389,7 @@ fn validate_skill_package(path: &Path) -> anyhow::Result<SkillPackage> {
     let package = parse_skill_descriptor(&descriptor)
         .with_context(|| format!("invalid cak.yaml in {}", descriptor_path.display()))?;
 
-    validate_fixture_requests(path)?;
+    validate_fixture_requests(path, &package.required_fixtures)?;
 
     Ok(package)
 }
@@ -412,9 +419,14 @@ fn validate_skill_frontmatter(raw: &str) -> anyhow::Result<()> {
 }
 
 fn parse_skill_descriptor(raw: &str) -> anyhow::Result<SkillPackage> {
-    let id = scalar_value(raw, "id").context("missing id")?;
-    let version = scalar_value(raw, "version").context("missing version")?;
-    let kind = scalar_value(raw, "kind").context("missing kind")?;
+    let id = top_level_scalar_value(raw, "id").context("missing id")?;
+    let version = top_level_scalar_value(raw, "version").context("missing version")?;
+    let kind = top_level_scalar_value(raw, "kind").context("missing kind")?;
+    let required_fixtures = list_values(raw, "required_fixtures")
+        .context("missing required_fixtures")?
+        .into_iter()
+        .map(|value| validate_relative_fixture_path(&value))
+        .collect::<anyhow::Result<Vec<_>>>()?;
 
     if !id.starts_with("local.") && !id.starts_with("cak.") {
         anyhow::bail!("id must start with `local.` or `cak.`");
@@ -442,13 +454,25 @@ fn parse_skill_descriptor(raw: &str) -> anyhow::Result<SkillPackage> {
         }
     }
 
-    Ok(SkillPackage { id, version, kind })
+    if required_fixtures.is_empty() {
+        anyhow::bail!("required_fixtures must not be empty");
+    }
+
+    Ok(SkillPackage {
+        id,
+        version,
+        kind,
+        required_fixtures,
+    })
 }
 
-fn scalar_value(raw: &str, key: &str) -> Option<String> {
+fn top_level_scalar_value(raw: &str, key: &str) -> Option<String> {
     let prefix = format!("{key}:");
     raw.lines().find_map(|line| {
-        let trimmed = line.trim();
+        let trimmed = line.trim_end();
+        if trimmed.len() != trimmed.trim_start().len() {
+            return None;
+        }
         trimmed
             .strip_prefix(&prefix)
             .map(str::trim)
@@ -457,7 +481,70 @@ fn scalar_value(raw: &str, key: &str) -> Option<String> {
     })
 }
 
-fn validate_fixture_requests(path: &Path) -> anyhow::Result<()> {
+fn list_values(raw: &str, key: &str) -> Option<Vec<String>> {
+    let header = format!("{key}:");
+    let lines: Vec<_> = raw.lines().collect();
+    for (index, line) in lines.iter().enumerate() {
+        if line.trim() != header {
+            continue;
+        }
+
+        let header_indent = indentation(line);
+        let mut values = Vec::new();
+        for item in lines.iter().skip(index + 1) {
+            if item.trim().is_empty() {
+                continue;
+            }
+            if indentation(item) <= header_indent {
+                break;
+            }
+            let trimmed = item.trim();
+            if let Some(value) = trimmed.strip_prefix("- ") {
+                let value = value.trim().trim_matches('"').trim_matches('\'');
+                if !value.is_empty() {
+                    values.push(value.to_string());
+                }
+            }
+        }
+
+        return Some(values);
+    }
+
+    None
+}
+
+fn indentation(line: &str) -> usize {
+    line.len() - line.trim_start().len()
+}
+
+fn validate_relative_fixture_path(value: &str) -> anyhow::Result<PathBuf> {
+    let path = PathBuf::from(value);
+    if path.is_absolute()
+        || path.components().any(|component| {
+            matches!(
+                component,
+                std::path::Component::ParentDir
+                    | std::path::Component::RootDir
+                    | std::path::Component::Prefix(_)
+            )
+        })
+    {
+        anyhow::bail!(
+            "required fixture path must be relative and stay inside the package: {value}"
+        );
+    }
+    Ok(path)
+}
+
+fn validate_fixture_requests(path: &Path, required_fixtures: &[PathBuf]) -> anyhow::Result<()> {
+    for relative_path in required_fixtures {
+        let fixture_path = path.join(relative_path);
+        if !fixture_path.is_file() {
+            anyhow::bail!("missing required fixture: {}", relative_path.display());
+        }
+        parse_fixture_request(&fixture_path)?;
+    }
+
     let fixtures_dir = path.join("fixtures");
     if !fixtures_dir.exists() {
         return Ok(());
@@ -476,12 +563,17 @@ fn validate_fixture_requests(path: &Path) -> anyhow::Result<()> {
             continue;
         }
 
-        let raw = std::fs::read_to_string(&fixture_path)
-            .with_context(|| format!("reading fixture {}", fixture_path.display()))?;
-        cak_runtime_core::parse_request(&raw)
-            .with_context(|| format!("parsing fixture {}", fixture_path.display()))?;
+        parse_fixture_request(&fixture_path)?;
     }
 
+    Ok(())
+}
+
+fn parse_fixture_request(fixture_path: &Path) -> anyhow::Result<()> {
+    let raw = std::fs::read_to_string(fixture_path)
+        .with_context(|| format!("reading fixture {}", fixture_path.display()))?;
+    cak_runtime_core::parse_request(&raw)
+        .with_context(|| format!("parsing fixture {}", fixture_path.display()))?;
     Ok(())
 }
 
@@ -556,18 +648,25 @@ trust:
 }
 
 fn fixture_template(name: &str, fixture_kind: &str) -> String {
-    let (request_id, task_kind, action_kind, target) = match fixture_kind {
+    let (request_id, task_kind, proposed_action, maturity) = match fixture_kind {
         "block" => (
             format!("{name}-blocked-authority-smoke"),
             "custom_skill_admission_smoke",
-            "claim_authority",
-            format!("local.{name}"),
+            serde_json::json!({
+                "kind": "claim_authority",
+                "skill_id": format!("local.{name}"),
+                "authority": "authoritative"
+            }),
+            "quarantined",
         ),
         _ => (
             format!("{name}-allow-smoke"),
             "custom_skill_admission_smoke",
-            "read_file",
-            "README.md".to_string(),
+            serde_json::json!({
+                "kind": "read_file",
+                "target": "README.md"
+            }),
+            "draft",
         ),
     };
 
@@ -579,10 +678,7 @@ fn fixture_template(name: &str, fixture_kind: &str) -> String {
             "kind": task_kind,
             "goal": "Validate the custom skill package fixture shape."
         },
-        "proposed_action": {
-            "kind": action_kind,
-            "target": target
-        },
+        "proposed_action": proposed_action,
         "skill": { "id": format!("local.{name}"), "version": "0.1.0" },
         "skill_graph": {
             "nodes": [
@@ -591,7 +687,7 @@ fn fixture_template(name: &str, fixture_kind: &str) -> String {
                     "kind": "package",
                     "version": "0.1.0",
                     "lifecycle": {
-                        "maturity": "draft",
+                        "maturity": maturity,
                         "health": "unknown"
                     },
                     "provenance_refs": ["local.template"]

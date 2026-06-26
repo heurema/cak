@@ -36,15 +36,18 @@ the caller passes that directory as the target.
 - package path is a directory;
 - `SKILL.md` exists and has `name` and `description` frontmatter;
 - `cak.yaml` exists and has the required v0 keys;
-- request fixtures under `fixtures/*.request.json` parse as `EvalRequest`.
+- every `admission.required_fixtures` entry exists and parses as `EvalRequest`;
+- additional request fixtures under `fixtures/*.request.json` parse as
+  `EvalRequest`.
 
 The check is shape validation, not semantic proof that a skill is useful or
 safe.
 
 ## What `install` records
 
-`cak skill install` validates the package, copies it into the target host skill
-directory, and writes:
+`cak skill install` validates the package, refuses to overwrite an existing
+target skill directory, copies it into the target host skill directory, and
+writes:
 
 ```text
 .cak-install.json

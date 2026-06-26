@@ -300,7 +300,84 @@ fn skill_install_copies_package_and_records_metadata() {
     assert_eq!(metadata["host"], "codex");
     assert_eq!(metadata["skill_id"], "local.demo-review");
     assert_eq!(metadata["version"], "0.1.0");
-    assert_eq!(metadata["source_path"], package.to_string_lossy().as_ref());
+    assert_eq!(
+        metadata["source_path"],
+        package.canonicalize().unwrap().to_string_lossy().as_ref()
+    );
+}
+
+#[test]
+fn skill_install_records_canonical_source_path() {
+    let root = temp_root("skill-install-canonical-source");
+    let package = root.join("demo-review");
+    let target = root.join("codex-skills");
+
+    let init_status = Command::new(BIN)
+        .arg("skill")
+        .arg("init")
+        .arg("demo-review")
+        .arg("--output")
+        .arg(&root)
+        .status()
+        .expect("run cak skill init");
+    assert_eq!(init_status.code(), Some(0));
+
+    let install_status = Command::new(BIN)
+        .current_dir(&root)
+        .arg("skill")
+        .arg("install")
+        .arg("./demo-review")
+        .arg("--target")
+        .arg("codex-skills")
+        .status()
+        .expect("run cak skill install");
+    assert_eq!(install_status.code(), Some(0));
+
+    let metadata: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(target.join("demo-review/.cak-install.json")).unwrap(),
+    )
+    .expect("metadata is JSON");
+    assert_eq!(
+        metadata["source_path"],
+        package.canonicalize().unwrap().to_string_lossy().as_ref()
+    );
+}
+
+#[test]
+fn skill_install_rejects_existing_unmanaged_directory() {
+    let root = temp_root("skill-install-existing");
+    let target = root.join("codex-skills");
+    let package = root.join("demo-review");
+    let existing = target.join("demo-review");
+
+    let init_status = Command::new(BIN)
+        .arg("skill")
+        .arg("init")
+        .arg("demo-review")
+        .arg("--output")
+        .arg(&root)
+        .status()
+        .expect("run cak skill init");
+    assert_eq!(init_status.code(), Some(0));
+
+    fs::create_dir_all(&existing).expect("create existing skill directory");
+    fs::write(existing.join("SKILL.md"), "# Existing unmanaged skill\n").expect("write existing");
+
+    let output = Command::new(BIN)
+        .arg("skill")
+        .arg("install")
+        .arg(&package)
+        .arg("--target")
+        .arg(&target)
+        .output()
+        .expect("run cak skill install");
+
+    assert_eq!(output.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("install directory already exists"),
+        "{stderr}"
+    );
 }
 
 #[test]
@@ -333,4 +410,96 @@ fn skill_install_rejects_source_target_overlap() {
         stderr.contains("would copy the skill package into itself"),
         "{stderr}"
     );
+}
+
+#[test]
+fn skill_check_rejects_missing_top_level_kind() {
+    let root = temp_root("skill-check-top-level-kind");
+    let package = root.join("demo-review");
+
+    let init_status = Command::new(BIN)
+        .arg("skill")
+        .arg("init")
+        .arg("demo-review")
+        .arg("--output")
+        .arg(&root)
+        .status()
+        .expect("run cak skill init");
+    assert_eq!(init_status.code(), Some(0));
+
+    let descriptor_path = package.join("cak.yaml");
+    let descriptor = fs::read_to_string(&descriptor_path).expect("read cak.yaml");
+    fs::write(
+        &descriptor_path,
+        descriptor.replacen("kind: package\n\nhost_package:", "\nhost_package:", 1),
+    )
+    .expect("write cak.yaml");
+
+    let output = Command::new(BIN)
+        .arg("skill")
+        .arg("check")
+        .arg(&package)
+        .output()
+        .expect("run cak skill check");
+
+    assert_eq!(output.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("missing kind"), "{stderr}");
+}
+
+#[test]
+fn skill_check_rejects_missing_required_fixture() {
+    let root = temp_root("skill-check-required-fixture");
+    let package = root.join("demo-review");
+
+    let init_status = Command::new(BIN)
+        .arg("skill")
+        .arg("init")
+        .arg("demo-review")
+        .arg("--output")
+        .arg(&root)
+        .status()
+        .expect("run cak skill init");
+    assert_eq!(init_status.code(), Some(0));
+
+    fs::remove_file(package.join("fixtures/allow.request.json")).expect("remove required fixture");
+
+    let output = Command::new(BIN)
+        .arg("skill")
+        .arg("check")
+        .arg(&package)
+        .output()
+        .expect("run cak skill check");
+
+    assert_eq!(output.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("missing required fixture"), "{stderr}");
+}
+
+#[test]
+fn skill_init_block_fixture_exercises_block_decision() {
+    let root = temp_root("skill-init-block-fixture");
+    let package = root.join("demo-review");
+
+    let init_status = Command::new(BIN)
+        .arg("skill")
+        .arg("init")
+        .arg("demo-review")
+        .arg("--output")
+        .arg(&root)
+        .status()
+        .expect("run cak skill init");
+    assert_eq!(init_status.code(), Some(0));
+
+    let output = Command::new(BIN)
+        .arg("eval")
+        .arg("--request")
+        .arg(package.join("fixtures/block.request.json"))
+        .output()
+        .expect("run cak eval");
+
+    assert_eq!(output.status.code(), Some(0));
+    let decision: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout is JSON");
+    assert_eq!(decision["decision"], "block");
 }
